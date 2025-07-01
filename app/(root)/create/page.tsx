@@ -1,5 +1,11 @@
+import CreateForm from "@/components/CreateForm";
+
 const page = () => {
-  return <div></div>;
+  return (
+    <div className="flex flex-col items-center justify-center h-screen">
+      <CreateForm />
+    </div>
+  );
 };
 
 export default page;
