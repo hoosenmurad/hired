@@ -92,11 +92,13 @@ const CreateForm = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#020408] bg-[url('/grid.png')] flex items-center justify-center p-4">
+    <div className="min-h-screen w-full bg-[url('/grid.png')] flex items-center justify-center p-4">
       <div className="w-full bg-[#191b1f] text-white rounded-2xl shadow-lg p-8 space-y-8">
         <header>
-          <h1 className="text-4xl font-bold">Starting Your Interview</h1>
-          <p className="text-[#8e96ac] mt-2">
+          <h1 className="text-4xl font-bold text-center">
+            Interview Generator
+          </h1>
+          <p className="text-[#8e96ac] mt-2 text-center">
             Customize your mock interview to suit your needs.
           </p>
         </header>
@@ -224,7 +226,7 @@ const CreateForm = () => {
                 render={() => (
                   <div className="space-y-2">
                     <Label htmlFor="tech-stack">
-                      Which tech stack would you like to focus on?
+                      What role related skills do you have?
                     </Label>
                     <div className="flex gap-2">
                       <Input
@@ -335,7 +337,7 @@ const CreateForm = () => {
               type="submit"
               className="w-full h-12 bg-[#cac5fe] text-black font-bold text-base rounded-lg hover:bg-[#b8b0fe] transition-colors"
             >
-              Start Interview
+              Create Interview
             </Button>
           </form>
         </Form>
