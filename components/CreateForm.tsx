@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Badge, X, Upload } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   type: z.string().min(1, { message: "This field is required." }),
@@ -85,7 +86,8 @@ const CreateForm = () => {
       if (!response.ok) throw new Error("Submission failed");
 
       form.reset();
-      router.refresh();
+      toast.success("Interview created successfully!");
+      router.push("/");
     } catch (err) {
       console.error(err);
     }
