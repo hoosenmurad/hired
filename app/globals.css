@@ -294,7 +294,7 @@
   }
 
   .navbar {
-    @apply flex items-center justify-between mx-auto w-full px-14 py-4 bg-white max-sm:px-4;
+    @apply flex items-center justify-between mx-auto w-full px-14 py-4 bg-transparent max-sm:px-4;
   }
 }
 

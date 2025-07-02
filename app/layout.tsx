@@ -1,16 +1,9 @@
-import { Toaster } from "sonner";
 import type { Metadata } from "next";
 import { Mona_Sans } from "next/font/google";
-import {
-  ClerkProvider,
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from "@clerk/nextjs";
+import { ClerkProvider } from "@clerk/nextjs";
 
 import "./globals.css";
+import Navbar from "@/components/Navbar";
 
 const monaSans = Mona_Sans({
   variable: "--font-mona-sans",
@@ -28,22 +21,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider>
-      <html lang="en" className="dark">
-        <body className={`${monaSans.className} antialiased pattern`}>
-          <header>
-            <SignedOut>
-              <SignInButton />
-              <SignUpButton />
-            </SignedOut>
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
-          </header>
+    <html lang="en" className="dark">
+      <body className={`${monaSans.className} antialiased pattern`}>
+        <ClerkProvider>
+          <Navbar />
           {children}
-          <Toaster />
-        </body>
-      </html>
-    </ClerkProvider>
+        </ClerkProvider>
+      </body>
+    </html>
   );
 }
