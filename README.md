@@ -12,7 +12,7 @@
     <img src="https://img.shields.io/badge/-Firebase-black?style=for-the-badge&logoColor=white&logo=firebase&color=DD2C00" alt="firebase" />
   </div>
 
-  <h3 align="center">Prepwise: A job interview preparation platform powered by Vapi AI Voice agents</h3>
+  <h3 align="center">HiredAI: A job interview preparation platform powered by Vapi AI Voice agents</h3>
 
    <div align="center">
      Build this project step by step with our detailed tutorial on <a href="https://www.youtube.com/@javascriptmastery/videos" target="_blank"><b>JavaScript Mastery</b></a> YouTube. Join the JSM family!
@@ -39,7 +39,7 @@ If you prefer visual learning, this is the perfect resource for you. Follow our 
 
 ## <a name="introduction">🤖 Introduction</a>
 
-Built with Next.js for the user interface and backend logic, Firebase for authentication and data storage, styled with TailwindCSS and using Vapi's voice agents, Prepwise is a website project designed to help you learn integrating AI models with your apps. The platform offers a sleek and modern experience for job interview preparation.
+Built with Next.js for the user interface and backend logic, Firebase for authentication and data storage, styled with TailwindCSS and using Vapi's voice agents, HiredAI is a website project designed to help you learn integrating AI models with your apps. The platform offers a sleek and modern experience for job interview preparation.
 
 If you're getting started and need assistance or face any bugs, join our active Discord community with over **50k+** members. It's a place where people help each other out.
 
@@ -581,93 +581,90 @@ system:
 <summary><code>Display feedback (app/(root)/interview/[id]/feedback/page.tsx):</code></summary>
 
 ```javascript
-    <section className="section-feedback">
-      <div className="flex flex-row justify-center">
-        <h1 className="text-4xl font-semibold">
-          Feedback on the Interview -{" "}
-          <span className="capitalize">{interview.role}</span> Interview
-        </h1>
+<section className="section-feedback">
+  <div className="flex flex-row justify-center">
+    <h1 className="text-4xl font-semibold">
+      Feedback on the Interview -{" "}
+      <span className="capitalize">{interview.role}</span> Interview
+    </h1>
+  </div>
+
+  <div className="flex flex-row justify-center">
+    <div className="flex flex-row gap-5">
+      <div className="flex flex-row gap-2 items-center">
+        <Image src="/star.svg" width={22} height={22} alt="star" />
+        <p>
+          Overall Impression:{" "}
+          <span className="text-primary-200 font-bold">
+            {feedback?.totalScore}
+          </span>
+          /100
+        </p>
       </div>
 
-      <div className="flex flex-row justify-center">
-        <div className="flex flex-row gap-5">
-          <div className="flex flex-row gap-2 items-center">
-            <Image src="/star.svg" width={22} height={22} alt="star" />
-            <p>
-              Overall Impression:{" "}
-              <span className="text-primary-200 font-bold">
-                {feedback?.totalScore}
-              </span>
-              /100
-            </p>
-          </div>
-
-          <div className="flex flex-row gap-2">
-            <Image src="/calendar.svg" width={22} height={22} alt="calendar" />
-            <p>
-              {feedback?.createdAt
-                ? dayjs(feedback.createdAt).format("MMM D, YYYY h:mm A")
-                : "N/A"}
-            </p>
-          </div>
-        </div>
+      <div className="flex flex-row gap-2">
+        <Image src="/calendar.svg" width={22} height={22} alt="calendar" />
+        <p>
+          {feedback?.createdAt
+            ? dayjs(feedback.createdAt).format("MMM D, YYYY h:mm A")
+            : "N/A"}
+        </p>
       </div>
+    </div>
+  </div>
 
-      <hr />
+  <hr />
 
-      <p>{feedback?.finalAssessment}</p>
+  <p>{feedback?.finalAssessment}</p>
 
-      <div className="flex flex-col gap-4">
-        <h2>Breakdown of the Interview:</h2>
-        {feedback?.categoryScores?.map((category, index) => (
-          <div key={index}>
-            <p className="font-bold">
-              {index + 1}. {category.name} ({category.score}/100)
-            </p>
-            <p>{category.comment}</p>
-          </div>
-        ))}
+  <div className="flex flex-col gap-4">
+    <h2>Breakdown of the Interview:</h2>
+    {feedback?.categoryScores?.map((category, index) => (
+      <div key={index}>
+        <p className="font-bold">
+          {index + 1}. {category.name} ({category.score}/100)
+        </p>
+        <p>{category.comment}</p>
       </div>
+    ))}
+  </div>
 
-      <div className="flex flex-col gap-3">
-        <h3>Strengths</h3>
-        <ul>
-          {feedback?.strengths?.map((strength, index) => (
-            <li key={index}>{strength}</li>
-          ))}
-        </ul>
-      </div>
+  <div className="flex flex-col gap-3">
+    <h3>Strengths</h3>
+    <ul>
+      {feedback?.strengths?.map((strength, index) => (
+        <li key={index}>{strength}</li>
+      ))}
+    </ul>
+  </div>
 
-      <div className="flex flex-col gap-3">
-        <h3>Areas for Improvement</h3>
-        <ul>
-          {feedback?.areasForImprovement?.map((area, index) => (
-            <li key={index}>{area}</li>
-          ))}
-        </ul>
-      </div>
+  <div className="flex flex-col gap-3">
+    <h3>Areas for Improvement</h3>
+    <ul>
+      {feedback?.areasForImprovement?.map((area, index) => (
+        <li key={index}>{area}</li>
+      ))}
+    </ul>
+  </div>
 
-      <div className="buttons">
-        <Button className="btn-secondary flex-1">
-          <Link href="/" className="flex w-full justify-center">
-            <p className="text-sm font-semibold text-primary-200 text-center">
-              Back to dashboard
-            </p>
-          </Link>
-        </Button>
+  <div className="buttons">
+    <Button className="btn-secondary flex-1">
+      <Link href="/" className="flex w-full justify-center">
+        <p className="text-sm font-semibold text-primary-200 text-center">
+          Back to dashboard
+        </p>
+      </Link>
+    </Button>
 
-        <Button className="btn-primary flex-1">
-          <Link
-            href={`/interview/${id}`}
-            className="flex w-full justify-center"
-          >
-            <p className="text-sm font-semibold text-black text-center">
-              Retake Interview
-            </p>
-          </Link>
-        </Button>
-      </div>
-    </section>
+    <Button className="btn-primary flex-1">
+      <Link href={`/interview/${id}`} className="flex w-full justify-center">
+        <p className="text-sm font-semibold text-black text-center">
+          Retake Interview
+        </p>
+      </Link>
+    </Button>
+  </div>
+</section>
 ```
 
 </details>
@@ -703,7 +700,6 @@ export const dummyInterviews: Interview[] = [
 ```
 
 </details>
-
 
 ## <a name="links">🔗 Assets</a>
 
