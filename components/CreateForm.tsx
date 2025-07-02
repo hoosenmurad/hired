@@ -94,7 +94,7 @@ const CreateForm = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-4">
+    <div className="min-h-screen w-full flex items-center justify-center p-4 font-sans">
       <div className="w-full bg-[#191b1f] text-white rounded-2xl shadow-lg p-8 space-y-8">
         <header>
           <h1 className="text-4xl font-bold text-center">
