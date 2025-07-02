@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { auth } from "@/firebase/client";
+import { useUser } from "@clerk/nextjs";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -36,7 +36,7 @@ const formSchema = z.object({
 });
 
 const CreateForm = () => {
-  const user = auth.currentUser;
+  const { user } = useUser();
   const router = useRouter();
   const [skillInput, setSkillInput] = useState("");
   const [profilePic, setProfilePic] = useState<File | null>(null);
@@ -78,7 +78,7 @@ const CreateForm = () => {
         body: JSON.stringify({
           ...values,
           specialtySkills: values.specialtySkills.join(", "),
-          userid: user?.uid,
+          userid: user?.id,
         }),
       });
 
