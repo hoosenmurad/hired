@@ -8,7 +8,8 @@ const Navbar = () => {
     <nav className="navbar">
       <Link href="/">
         <div className="flex items-center gap-2.5 cursor-pointer">
-          <Image src="/logo.svg" alt="logo" width={46} height={44} />
+          <Image src="/logo.svg" alt="logo" width={46} height={44} />{" "}
+          <h2 className="text-primary-100">HiredAI</h2>
         </div>
       </Link>
       <div className="flex items-center gap-8">
