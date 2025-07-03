@@ -36,16 +36,7 @@ const formSchema = z.object({
   ]),
 });
 
-// Add prop type for permissions
-interface CreateFormProps {
-  permissions: {
-    allowed: boolean;
-    limit: number;
-    used: number;
-  };
-}
-
-const CreateForm = ({ permissions }: CreateFormProps) => {
+const CreateForm = () => {
   const { user } = useUser();
   const router = useRouter();
   const [skillInput, setSkillInput] = useState("");
@@ -117,12 +108,6 @@ const CreateForm = ({ permissions }: CreateFormProps) => {
           <p className="text-[#8e96ac] mt-2 text-center">
             Customize your mock interview to suit your needs.
           </p>
-          {!permissions.allowed && (
-            <div className="mt-4 text-red-400 text-center">
-              Interview limit reached ({permissions.used}/{permissions.limit}).
-              Upgrade your plan to create more interviews.
-            </div>
-          )}
         </header>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -358,7 +343,6 @@ const CreateForm = ({ permissions }: CreateFormProps) => {
             <Button
               type="submit"
               className="w-full h-12 bg-[#cac5fe] text-black font-bold text-base rounded-lg hover:bg-[#b8b0fe] transition-colors"
-              disabled={!permissions.allowed}
             >
               Create Interview
             </Button>
