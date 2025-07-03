@@ -1,5 +1,7 @@
 "use server";
 
+import { auth } from "@clerk/nextjs/server";
+
 import { generateObject } from "ai";
 import { google } from "@ai-sdk/google";
 
@@ -123,3 +125,34 @@ export async function getInterviewsByUserId(
     ...doc.data(),
   })) as Interview[];
 }
+
+export const newInterviewPermissions =
+  async (): Promise<NewInterviewPermission> => {
+    const { userId, has } = await auth();
+    if (!userId) throw new Error("User not authenticated");
+
+    // Determine limit based on subscription
+    let limit = 0;
+    if (await has({ plan: "hired" })) {
+      limit = 20;
+    } else if (await has({ plan: "prepped" })) {
+      limit = 10;
+    } else if (await has({ plan: "hustle" })) {
+      limit = 5;
+    } else {
+      return { allowed: false, limit: 0, used: 0 };
+    }
+
+    // Count user's current interviews
+    const snapshot = await db
+      .collection("interviews")
+      .where("author", "==", userId)
+      .get();
+    const used = snapshot.size;
+
+    return {
+      allowed: used < limit,
+      limit,
+      used,
+    };
+  };

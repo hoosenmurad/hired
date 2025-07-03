@@ -85,3 +85,9 @@ interface InterviewFormProps {
 interface TechIconProps {
   specialtySkills: string[];
 }
+
+interface NewInterviewPermission {
+  allowed: boolean;
+  limit: number;
+  used: number;
+}
