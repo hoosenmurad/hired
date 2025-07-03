@@ -13,16 +13,20 @@ const navItems = [
 const NavItems = () => {
   const pathname = usePathname();
 
-  // Hide Create,Pricing and dashboard when on /create
-  if (pathname === "/create") return null;
-
   return (
     <nav className="flex items-center gap-4">
       {navItems.map(({ label, href }) => (
         <Link
           href={href}
           key={label}
-          className={cn(pathname === href && "text-primary font-semibold")}
+          className={cn(
+            pathname === href && "text-primary font-semibold",
+            href === "/create" && pathname.startsWith("/create") && "hidden",
+            href === "/pricing" && pathname.startsWith("/pricing") && "hidden",
+            href === "/dashboard" &&
+              pathname.startsWith("/dashboard") &&
+              "hidden"
+          )}
         >
           {label}
         </Link>
