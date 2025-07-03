@@ -1,6 +1,6 @@
 import CreateForm from "@/components/CreateForm";
 
-const page = () => {
+const NewInterview = () => {
   return (
     <main className=" items-center justify-center">
       <article className="w-full gap-4 flex flex-col">
@@ -10,4 +10,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default NewInterview;

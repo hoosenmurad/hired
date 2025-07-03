@@ -12,10 +12,10 @@ export async function getCurrentUser(): Promise<User | null> {
   const userRecord = await db.collection("users").doc(clerkUser.id).get();
   if (!userRecord.exists) {
     // Optionally, create a Firestore profile here if it doesn't exist
-    // await db.collection("users").doc(clerkUser.id).set({
-    //   name: clerkUser.firstName,
-    //   email: clerkUser.emailAddresses[0]?.emailAddress,
-    // });
+    await db.collection("users").doc(clerkUser.id).set({
+      name: clerkUser.firstName,
+      email: clerkUser.emailAddresses[0]?.emailAddress,
+    });
     return {
       id: clerkUser.id,
       name: clerkUser.firstName,

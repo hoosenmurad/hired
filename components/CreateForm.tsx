@@ -72,6 +72,11 @@ const CreateForm = () => {
   };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (!user) {
+      toast.error("You must be signed in to create an interview.");
+      router.push("/sign-in");
+      return;
+    }
     try {
       const response = await fetch("/api/vapi/generate", {
         method: "POST",
