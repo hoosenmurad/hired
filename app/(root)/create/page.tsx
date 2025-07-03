@@ -1,10 +1,12 @@
+import { newInterviewPermissions } from "@/lib/actions/general.action";
 import CreateForm from "@/components/CreateForm";
 
-const NewInterview = () => {
+const NewInterview = async () => {
+  const permissions = await newInterviewPermissions();
   return (
     <main className=" items-center justify-center">
       <article className="w-full gap-4 flex flex-col">
-        <CreateForm />
+        <CreateForm permissions={permissions} />
       </article>
     </main>
   );
