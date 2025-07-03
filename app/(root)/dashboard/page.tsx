@@ -40,7 +40,7 @@ async function Dashboard() {
                 interviewId={interview.id}
                 role={interview.role}
                 type={interview.type}
-                techstack={interview.techstack}
+                specialtySkills={interview.specialtySkills}
                 createdAt={interview.createdAt}
               />
             ))
@@ -51,7 +51,7 @@ async function Dashboard() {
       </section>
 
       <section className="flex flex-col gap-6 mt-8">
-        <h2>Take Interviews</h2>
+        <h2>Generated Interviews</h2>
 
         <div className="interviews-section">
           {hasUpcomingInterviews ? (
@@ -62,7 +62,7 @@ async function Dashboard() {
                 interviewId={interview.id}
                 role={interview.role}
                 type={interview.type}
-                techstack={interview.techstack}
+                specialtySkills={interview.specialtySkills}
                 createdAt={interview.createdAt}
               />
             ))
