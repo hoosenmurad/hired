@@ -4,7 +4,7 @@ import Image from "next/image";
 
 export default function LandingPage() {
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen">
+    <main className="flex flex-col items-center justify-center ">
       <h1 className="text-5xl font-bold mb-8">Welcome to HiredAI</h1>
       <section className="card-cta">
         <div className="flex flex-col gap-6 max-w-lg">
