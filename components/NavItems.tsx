@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  //{ label: "Home", href: "/" },
+  { label: "Dashboard", href: "/dashboard" },
   { label: "Create", href: "/create" },
   { label: "Pricing", href: "/pricing" },
 ];
@@ -13,7 +13,7 @@ const navItems = [
 const NavItems = () => {
   const pathname = usePathname();
 
-  // Hide Create and Pricing when on /create
+  // Hide Create,Pricing and dashboard when on /create
   if (pathname === "/create") return null;
 
   return (
