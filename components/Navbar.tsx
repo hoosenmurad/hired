@@ -16,7 +16,9 @@ const Navbar = () => {
         <NavItems />
         <SignedOut>
           <SignInButton>
-            <button className="btn-signin">Sign In</button>
+            <button className="btn-primary max-sm:w-full px-6 py-2 rounded-full font-bold transition-colors">
+              Sign In
+            </button>
           </SignInButton>
         </SignedOut>
         <SignedIn>
