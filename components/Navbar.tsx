@@ -15,9 +15,9 @@ const Navbar = () => {
       <div className="flex items-center gap-8">
         <NavItems />
         <SignedOut>
-          <Link href="/sign-in">
+          <Link href="/sign-up">
             <button className="btn-primary max-sm:w-full px-6 py-2 rounded-full font-bold transition-colors">
-              Sign In
+              Sign Up
             </button>
           </Link>
         </SignedOut>
