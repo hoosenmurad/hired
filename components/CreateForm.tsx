@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge, X, Upload, Loader } from "lucide-react";
+import { X, Upload, Loader } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
@@ -265,19 +265,20 @@ const CreateForm = () => {
                     </div>
                     <div className="flex flex-wrap gap-2 mt-2">
                       {form.watch("specialtySkills").map((skill, i) => (
-                        <Badge
+                        <div
                           key={i}
-                          className="flex items-center gap-1 bg-[#27282f] text-white"
+                          className="flex items-center px-3 py-1 rounded-lg bg-[#27282f] text-white"
                         >
-                          {skill}
+                          <span>{skill}</span>
                           <button
                             type="button"
                             onClick={() => handleRemoveSkill(skill)}
-                            className="ml-1"
+                            className="ml-2 text-[#cac5fe] hover:text-red-400"
+                            aria-label={`Remove ${skill}`}
                           >
                             <X className="h-3 w-3" />
                           </button>
-                        </Badge>
+                        </div>
                       ))}
                     </div>
                   </div>
