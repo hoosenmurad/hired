@@ -239,7 +239,7 @@ const CreateForm = () => {
                 render={() => (
                   <div className="space-y-2">
                     <Label htmlFor="tech-stack">
-                      What role related skills do you have?
+                      What role related skills or experience do you have?
                     </Label>
                     <div className="flex gap-2">
                       <Input
@@ -326,7 +326,9 @@ const CreateForm = () => {
                   className="flex items-center justify-center w-full h-12 px-4 bg-[#27282f] border-none rounded-lg cursor-pointer hover:bg-[#3a3b43]"
                 >
                   <Upload className="h-5 w-5 mr-2 text-[#8e96ac]" />
-                  <span className="text-[#8e96ac]">Upload an image</span>
+                  <span className="text-[#8e96ac]">
+                    Upload an image (optional)
+                  </span>
                 </Label>
                 <input
                   id="file-upload"
