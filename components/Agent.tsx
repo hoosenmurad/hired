@@ -131,11 +131,14 @@ const Agent = ({
           .map((question) => `- ${question}`)
           .join("\n");
       }
-
       await vapi.start(interviewer, {
         variableValues: {
           questions: formattedQuestions,
         },
+        maxDurationSeconds:
+          questions && questions.length > 0
+            ? questions.length * 2 * 60
+            : undefined,
       });
     }
   };
