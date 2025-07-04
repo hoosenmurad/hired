@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge, X, Upload } from "lucide-react";
+import { Badge, X, Upload, Loader } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
@@ -41,6 +41,7 @@ const CreateForm = () => {
   const router = useRouter();
   const [skillInput, setSkillInput] = useState("");
   const [profilePic, setProfilePic] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -77,6 +78,7 @@ const CreateForm = () => {
       router.push("/sign-in");
       return;
     }
+    setLoading(true);
     try {
       const response = await fetch("/api/vapi/generate", {
         method: "POST",
@@ -92,9 +94,13 @@ const CreateForm = () => {
 
       form.reset();
       toast.success("Interview created successfully!");
-      router.push("/");
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 1000);
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -342,9 +348,17 @@ const CreateForm = () => {
             </div>
             <Button
               type="submit"
-              className="w-full h-12 bg-[#cac5fe] text-black font-bold text-base rounded-lg hover:bg-[#b8b0fe] transition-colors"
+              className="w-full h-12 bg-[#cac5fe] text-black font-bold text-base rounded-lg hover:bg-[#b8b0fe] transition-colors flex items-center justify-center gap-2"
+              disabled={loading}
             >
-              Create Interview
+              {loading ? (
+                <>
+                  <Loader className="animate-spin h-5 w-5 mr-2" />
+                  Creating...
+                </>
+              ) : (
+                "Create Interview"
+              )}
             </Button>
           </form>
         </Form>
