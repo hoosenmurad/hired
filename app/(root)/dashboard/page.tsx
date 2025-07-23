@@ -16,6 +16,7 @@ async function Dashboard() {
   const user = await getCurrentUser();
 
   if (!user?.id) {
+    // Handle the case when the user is not logged in, e.g.:
     return <div>Please sign in to view your interviews.</div>;
   }
 

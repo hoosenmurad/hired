@@ -7,7 +7,7 @@ import DisplayTechIcons from "./DisplayTechIcons";
 
 import { cn, getRandomInterviewCover } from "@/lib/utils";
 import { getFeedbackByInterviewId } from "@/lib/actions/general.action";
-import { Sparkles, User, Briefcase } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 const InterviewCard = async ({
   interviewId,
@@ -56,83 +56,81 @@ const InterviewCard = async ({
             <p className="badge-text">{normalizedType}</p>
           </div>
 
-          {/* Personalization Badge */}
+          {/* Personalization Badge - Only if personalized */}
           {isPersonalized && (
-            <div className="absolute top-0 left-0 w-fit px-3 py-1 rounded-br-lg bg-primary-200 text-dark-100">
+            <div className="absolute top-0 left-0 w-fit px-2 py-1 rounded-br-lg bg-primary-200 text-dark-100">
               <div className="flex items-center space-x-1">
                 <Sparkles className="h-3 w-3" />
-                <span className="text-xs font-semibold">Personalized</span>
+                <span className="text-xs font-semibold">AI</span>
               </div>
             </div>
           )}
 
           {/* Cover Image */}
-          <div className="relative w-full h-32 rounded-lg overflow-hidden mb-4">
-            <Image
-              src={getRandomInterviewCover()}
-              alt="Interview cover"
-              fill
-              className="object-cover"
-            />
+          <Image
+            src={getRandomInterviewCover()}
+            alt="cover-image"
+            width={90}
+            height={90}
+            className="rounded-full object-fit size-[90px]"
+          />
+
+          {/* Interview Role */}
+          <h3 className="mt-5 capitalize">
+            {role} Interview
+            {/* Subtle personalization indicator in title */}
+            {isPersonalized && (
+              <span className="ml-2 text-primary-200 text-sm">✨</span>
+            )}
+          </h3>
+
+          {/* Date & Score */}
+          <div className="flex flex-row gap-5 mt-3">
+            <div className="flex flex-row gap-2">
+              <Image
+                src="/calendar.svg"
+                width={22}
+                height={22}
+                alt="calendar"
+              />
+              <p>{formattedDate}</p>
+            </div>
+
+            <div className="flex flex-row gap-2 items-center">
+              <Image src="/star.svg" width={22} height={22} alt="star" />
+              <p>{feedback?.totalScore || "---"}/100</p>
+            </div>
           </div>
 
-          {/* Interview Title */}
-          <h3 className="text-xl font-bold text-white mb-2">{role}</h3>
-
-          {/* Personalization Details */}
-          {isPersonalized &&
-            (profileName || (jobTargetTitle && jobTargetCompany)) && (
-              <div className="mb-4 space-y-2">
-                {profileName && (
-                  <div className="flex items-center space-x-2 text-sm text-light-100">
-                    <User className="h-4 w-4 text-primary-200" />
-                    <span>Profile: {profileName}</span>
-                  </div>
-                )}
-                {jobTargetTitle && jobTargetCompany && (
-                  <div className="flex items-center space-x-2 text-sm text-light-100">
-                    <Briefcase className="h-4 w-4 text-primary-200" />
-                    <span>
-                      Target: {jobTargetTitle} at {jobTargetCompany}
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
-
-          {/* Tech Stack */}
-          <DisplayTechIcons specialtySkills={specialtySkills} />
-
-          {/* Date */}
-          <p className="text-light-100 text-sm mt-4">{formattedDate}</p>
+          {/* Feedback or Placeholder Text with optional personalization hint */}
+          <p className="line-clamp-2 mt-5">
+            {feedback?.finalAssessment ||
+              (isPersonalized
+                ? `Personalized interview${
+                    profileName ? ` for ${profileName}` : ""
+                  }${
+                    jobTargetTitle && jobTargetCompany
+                      ? ` targeting ${jobTargetTitle} at ${jobTargetCompany}`
+                      : ""
+                  }. Take it now to improve your skills.`
+                : "You haven't taken this interview yet. Take it now to improve your skills.")}
+          </p>
         </div>
 
-        {/* Action Buttons */}
-        <div className="mt-6">
-          {feedback ? (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-light-100">Interview Score:</span>
-                <span className="text-lg font-bold text-primary-200">
-                  {feedback.totalScore}/100
-                </span>
-              </div>
-              <div className="flex space-x-2">
-                <Button asChild variant="outline" className="flex-1">
-                  <Link href={`/interview/${interviewId}/feedback`}>
-                    View Feedback
-                  </Link>
-                </Button>
-                <Button asChild className="flex-1">
-                  <Link href={`/interview/${interviewId}`}>Retake</Link>
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <Button asChild className="w-full">
-              <Link href={`/interview/${interviewId}`}>Start Interview</Link>
-            </Button>
-          )}
+        <div className="flex flex-row justify-between">
+          <DisplayTechIcons specialtySkills={specialtySkills} />
+
+          <Button className="btn-primary">
+            <Link
+              href={
+                feedback
+                  ? `/interview/${interviewId}/feedback`
+                  : `/interview/${interviewId}`
+              }
+            >
+              {feedback ? "Check Feedback" : "Take Interview"}
+            </Link>
+          </Button>
         </div>
       </div>
     </div>
