@@ -85,6 +85,7 @@ const JobTargetForm = ({
         formData.append("urlInput", urlInput);
       } else {
         toast.error("Please provide a job description");
+        setIsParsingJob(false);
         return;
       }
 
@@ -92,6 +93,17 @@ const JobTargetForm = ({
         method: "POST",
         body: formData,
       });
+
+      // Check if response is ok first
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Check if response is JSON
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Server returned non-JSON response");
+      }
 
       const result = await response.json();
 
@@ -121,7 +133,24 @@ const JobTargetForm = ({
       }
     } catch (error) {
       console.error("Error parsing job description:", error);
-      toast.error("Failed to parse job description");
+
+      if (error instanceof Error) {
+        if (error.message.includes("HTTP error")) {
+          toast.error(
+            "Server error while parsing job description. Please try again."
+          );
+        } else if (error.message.includes("non-JSON")) {
+          toast.error("Server configuration error. Please contact support.");
+        } else if (error.message.includes("JSON")) {
+          toast.error("Invalid response from server. Please try again.");
+        } else {
+          toast.error(
+            "Failed to parse job description. Please check your input and try again."
+          );
+        }
+      } else {
+        toast.error("Failed to parse job description. Please try again.");
+      }
     } finally {
       setIsParsingJob(false);
     }

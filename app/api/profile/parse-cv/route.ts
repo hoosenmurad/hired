@@ -31,12 +31,28 @@ const parsedCVSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    console.log("CV parsing request received");
+
     const formData = await request.formData();
     const file = formData.get("cv") as File;
 
     if (!file) {
+      console.log("No file provided");
       return NextResponse.json(
         { success: false, error: "No CV file uploaded" },
+        { status: 400 }
+      );
+    }
+
+    console.log("File received:", file.name, file.type, file.size);
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "File size too large. Please upload a file smaller than 10MB.",
+        },
         { status: 400 }
       );
     }
@@ -49,11 +65,26 @@ export async function POST(request: NextRequest) {
 
     // Extract text based on file type
     if (file.type === "application/pdf") {
-      const pdfData = await pdf(buffer);
-      extractedText = pdfData.text;
+      console.log("Processing PDF file");
+      try {
+        const pdfData = await pdf(buffer);
+        extractedText = pdfData.text;
+        console.log("PDF text extracted, length:", extractedText.length);
+      } catch (pdfError) {
+        console.error("PDF parsing error:", pdfError);
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Failed to parse PDF file. Please ensure it's a valid PDF.",
+          },
+          { status: 400 }
+        );
+      }
     } else if (file.type.includes("text")) {
+      console.log("Processing text file");
       extractedText = buffer.toString("utf-8");
     } else {
+      console.log("Unsupported file type:", file.type);
       return NextResponse.json(
         {
           success: false,
@@ -63,6 +94,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate extracted text
+    if (!extractedText || extractedText.trim().length < 50) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "The file appears to be empty or too short to parse. Please upload a proper CV.",
+        },
+        { status: 400 }
+      );
+    }
+
+    console.log("Starting AI parsing with Gemini");
+
     // Parse CV using Gemini
     const { object } = await generateObject({
       model: google("gemini-2.0-flash-001"),
@@ -71,7 +116,9 @@ export async function POST(request: NextRequest) {
         Parse the following CV/Resume and extract structured information:
 
         CV Text:
-        ${extractedText}
+        ${extractedText.substring(0, 10000)} ${
+        extractedText.length > 10000 ? "...(truncated)" : ""
+      }
 
         Please extract:
         1. Full name
@@ -86,14 +133,43 @@ export async function POST(request: NextRequest) {
       `,
     });
 
+    console.log("AI parsing completed successfully");
+
     return NextResponse.json({
       success: true,
       data: object,
     });
   } catch (error) {
     console.error("Error parsing CV:", error);
+
+    // Check if it's a Gemini API error
+    if (error instanceof Error) {
+      if (error.message.includes("API key")) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "AI service configuration error. Please contact support.",
+          },
+          { status: 500 }
+        );
+      }
+      if (error.message.includes("quota") || error.message.includes("limit")) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "AI service temporarily unavailable. Please try again later.",
+          },
+          { status: 503 }
+        );
+      }
+    }
+
     return NextResponse.json(
-      { success: false, error: "Failed to parse CV" },
+      {
+        success: false,
+        error: "Failed to parse CV. Please try again or contact support.",
+      },
       { status: 500 }
     );
   }

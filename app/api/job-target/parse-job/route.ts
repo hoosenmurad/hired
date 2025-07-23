@@ -14,6 +14,8 @@ const parsedJobSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    console.log("Job description parsing request received");
+
     const formData = await request.formData();
     const file = formData.get("jobDescription") as File;
     const textInput = formData.get("textInput") as string;
@@ -22,13 +24,40 @@ export async function POST(request: NextRequest) {
     let jobText = "";
 
     if (file) {
+      console.log("Processing file:", file.name, file.type, file.size);
+
+      // Validate file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "File size too large. Please upload a file smaller than 10MB.",
+          },
+          { status: 400 }
+        );
+      }
+
       // Handle file upload
       const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
 
       if (file.type === "application/pdf") {
-        const pdfData = await pdf(buffer);
-        jobText = pdfData.text;
+        try {
+          const pdfData = await pdf(buffer);
+          jobText = pdfData.text;
+          console.log("PDF text extracted, length:", jobText.length);
+        } catch (pdfError) {
+          console.error("PDF parsing error:", pdfError);
+          return NextResponse.json(
+            {
+              success: false,
+              error:
+                "Failed to parse PDF file. Please ensure it's a valid PDF.",
+            },
+            { status: 400 }
+          );
+        }
       } else if (file.type.includes("text")) {
         jobText = buffer.toString("utf-8");
       } else {
@@ -41,10 +70,10 @@ export async function POST(request: NextRequest) {
         );
       }
     } else if (textInput) {
-      // Handle text input
+      console.log("Processing text input, length:", textInput.length);
       jobText = textInput;
     } else if (urlInput) {
-      // Handle URL input (basic implementation)
+      console.log("Processing URL input:", urlInput);
       try {
         const response = await fetch(urlInput);
         if (!response.ok) {
@@ -56,10 +85,15 @@ export async function POST(request: NextRequest) {
           .replace(/<[^>]*>/g, " ")
           .replace(/\s+/g, " ")
           .trim();
+        console.log("URL content extracted, length:", jobText.length);
       } catch (fetchError) {
         console.error("URL fetch error:", fetchError);
         return NextResponse.json(
-          { success: false, error: "Failed to fetch job description from URL" },
+          {
+            success: false,
+            error:
+              "Failed to fetch job description from URL. Please check the URL and try again.",
+          },
           { status: 400 }
         );
       }
@@ -70,6 +104,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate extracted text
+    if (!jobText || jobText.trim().length < 50) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "The job description appears to be empty or too short to parse. Please provide more content.",
+        },
+        { status: 400 }
+      );
+    }
+
+    console.log("Starting AI parsing with Gemini");
+
     // Parse job description using Gemini
     const { object } = await generateObject({
       model: google("gemini-2.0-flash-001"),
@@ -78,7 +126,9 @@ export async function POST(request: NextRequest) {
         Parse the following job description and extract structured information:
 
         Job Description:
-        ${jobText}
+        ${jobText.substring(0, 10000)} ${
+        jobText.length > 10000 ? "...(truncated)" : ""
+      }
 
         Please extract:
         1. Job title
@@ -93,14 +143,44 @@ export async function POST(request: NextRequest) {
       `,
     });
 
+    console.log("AI parsing completed successfully");
+
     return NextResponse.json({
       success: true,
       data: object,
     });
   } catch (error) {
     console.error("Error parsing job description:", error);
+
+    // Check if it's a Gemini API error
+    if (error instanceof Error) {
+      if (error.message.includes("API key")) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "AI service configuration error. Please contact support.",
+          },
+          { status: 500 }
+        );
+      }
+      if (error.message.includes("quota") || error.message.includes("limit")) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "AI service temporarily unavailable. Please try again later.",
+          },
+          { status: 503 }
+        );
+      }
+    }
+
     return NextResponse.json(
-      { success: false, error: "Failed to parse job description" },
+      {
+        success: false,
+        error:
+          "Failed to parse job description. Please try again or contact support.",
+      },
       { status: 500 }
     );
   }
