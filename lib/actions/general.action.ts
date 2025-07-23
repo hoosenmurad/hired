@@ -12,6 +12,12 @@ export async function createFeedback(params: CreateFeedbackParams) {
   const { interviewId, userId, transcript, feedbackId } = params;
 
   try {
+    // Get the interview to retrieve questions
+    const interview = await getInterviewById(interviewId);
+    if (!interview) {
+      throw new Error("Interview not found");
+    }
+
     const formattedTranscript = transcript
       .map(
         (sentence: { role: string; content: string }) =>
@@ -26,15 +32,28 @@ export async function createFeedback(params: CreateFeedbackParams) {
       schema: feedbackSchema,
       prompt: `
         You are an AI interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories. Be thorough and detailed in your analysis. Don't be lenient with the candidate. If there are mistakes or areas for improvement, point them out.
+        
+        Interview Questions:
+        ${interview.questions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
+        
         Transcript:
         ${formattedTranscript}
 
-        Please score the candidate from 0 to 100 in the following areas. Do not add categories other than the ones provided:
+        Please provide:
+        1. Score the candidate from 0 to 100 in the following areas:
         - **Communication Skills**: Clarity, articulation, structured responses.
         - **Technical Knowledge**: Understanding of key concepts for the role.
         - **Problem-Solving**: Ability to analyze problems and propose solutions.
         - **Cultural & Role Fit**: Alignment with company values and job role.
         - **Confidence & Clarity**: Confidence in responses, engagement, and clarity.
+        
+        2. For each question asked, provide:
+        - The question text
+        - The candidate's response (summarized)
+        - A rating from 0-100 for that specific response
+        - Specific feedback on that response
+        
+        3. Overall strengths, areas for improvement, and final assessment.
         `,
       system:
         "You are a professional interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories",
@@ -45,6 +64,7 @@ export async function createFeedback(params: CreateFeedbackParams) {
       userId: userId,
       totalScore: object.totalScore,
       categoryScores: object.categoryScores,
+      questionRatings: object.questionRatings,
       strengths: object.strengths,
       areasForImprovement: object.areasForImprovement,
       finalAssessment: object.finalAssessment,

@@ -63,9 +63,37 @@ const Feedback = async ({ params }: RouteParams) => {
 
       <p>{feedback?.finalAssessment}</p>
 
+      {/* Per-Question Ratings */}
+      {feedback?.questionRatings && feedback.questionRatings.length > 0 && (
+        <div className="flex flex-col gap-4">
+          <h2>Question-by-Question Analysis:</h2>
+          {feedback.questionRatings.map((rating, index) => (
+            <div key={index} className="bg-gray-50 p-4 rounded-lg">
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="font-bold text-lg">Question {index + 1}</h3>
+                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium">
+                  {rating.rating}/100
+                </span>
+              </div>
+              <p className="font-medium mb-2 text-gray-800">
+                {rating.question}
+              </p>
+              <div className="mb-2">
+                <h4 className="font-medium text-gray-700">Your Response:</h4>
+                <p className="text-gray-600 italic">{rating.response}</p>
+              </div>
+              <div>
+                <h4 className="font-medium text-gray-700">Feedback:</h4>
+                <p className="text-gray-600">{rating.feedback}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Interview Breakdown */}
       <div className="flex flex-col gap-4">
-        <h2>Breakdown of the Interview:</h2>
+        <h2>Overall Performance Breakdown:</h2>
         {feedback?.categoryScores?.map((category, index) => (
           <div key={index}>
             <p className="font-bold">

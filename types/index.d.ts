@@ -7,6 +7,12 @@ interface Feedback {
     score: number;
     comment: string;
   }>;
+  questionRatings: Array<{
+    question: string;
+    response: string;
+    rating: number;
+    feedback: string;
+  }>;
   strengths: string[];
   areasForImprovement: string[];
   finalAssessment: string;
@@ -23,6 +29,42 @@ interface Interview {
   userId: string;
   type: string;
   finalized: boolean;
+  profileId?: string;
+  jobTargetId?: string;
+}
+
+interface Profile {
+  id: string;
+  userId: string;
+  name: string;
+  summary: string;
+  skills: string[];
+  education: Array<{
+    degree: string;
+    institution: string;
+    year: string;
+  }>;
+  experience: Array<{
+    title: string;
+    company: string;
+    duration: string;
+    description: string;
+  }>;
+  goals: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface JobTarget {
+  id: string;
+  userId: string;
+  title: string;
+  company: string;
+  responsibilities: string[];
+  requiredSkills: string[];
+  description: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface CreateFeedbackParams {
@@ -90,4 +132,77 @@ interface NewInterviewPermission {
   allowed: boolean;
   limit: number;
   used: number;
+}
+
+interface CreateProfileParams {
+  userId: string;
+  name: string;
+  summary: string;
+  skills: string[];
+  education: Array<{
+    degree: string;
+    institution: string;
+    year: string;
+  }>;
+  experience: Array<{
+    title: string;
+    company: string;
+    duration: string;
+    description: string;
+  }>;
+  goals: string;
+}
+
+interface CreateJobTargetParams {
+  userId: string;
+  title: string;
+  company: string;
+  responsibilities: string[];
+  requiredSkills: string[];
+  description: string;
+}
+
+interface ParsedCV {
+  name?: string;
+  summary?: string;
+  skills?: string[];
+  education?: Array<{
+    degree: string;
+    institution: string;
+    year: string;
+  }>;
+  experience?: Array<{
+    title: string;
+    company: string;
+    duration: string;
+    description: string;
+  }>;
+}
+
+interface ParsedJobDescription {
+  title?: string;
+  company?: string;
+  responsibilities?: string[];
+  requiredSkills?: string[];
+  description?: string;
+}
+
+interface InterviewSetupParams {
+  profileId: string;
+  jobTargetId: string;
+  tone: "professional" | "casual" | "challenging";
+  difficulty: "easy" | "medium" | "hard";
+  questionCount: number;
+}
+
+interface ProfileFormProps {
+  initialData?: Profile;
+  onSubmit: (data: CreateProfileParams) => Promise<void>;
+  loading?: boolean;
+}
+
+interface JobTargetFormProps {
+  initialData?: JobTarget;
+  onSubmit: (data: CreateJobTargetParams) => Promise<void>;
+  loading?: boolean;
 }

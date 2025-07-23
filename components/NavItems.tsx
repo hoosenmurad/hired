@@ -6,7 +6,9 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard" },
-  { label: "Create", href: "/create" },
+  { label: "Profile", href: "/profile" },
+  { label: "Job Targets", href: "/job-targets" },
+  { label: "Create Interview", href: "/create" },
   { label: "Pricing", href: "/pricing" },
 ];
 
@@ -25,6 +27,10 @@ const NavItems = () => {
             href === "/pricing" && pathname.startsWith("/pricing") && "hidden",
             href === "/dashboard" &&
               pathname.startsWith("/dashboard") &&
+              "hidden",
+            href === "/profile" && pathname.startsWith("/profile") && "hidden",
+            href === "/job-targets" &&
+              pathname.startsWith("/job-targets") &&
               "hidden"
           )}
         >
