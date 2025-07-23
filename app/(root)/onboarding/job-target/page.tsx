@@ -40,28 +40,26 @@ const JobTargetCreationPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto py-8">
         <div className="mb-8 text-center">
           <div className="flex justify-center mb-4">
             <div className="flex items-center space-x-4">
-              <div className="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">
+              <div className="w-8 h-8 bg-success-100 text-dark-100 rounded-full flex items-center justify-center text-sm font-semibold">
                 ✓
               </div>
-              <div className="w-16 h-1 bg-green-600"></div>
-              <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">
+              <div className="w-16 h-1 bg-success-100"></div>
+              <div className="w-8 h-8 bg-primary-200 text-dark-100 rounded-full flex items-center justify-center text-sm font-semibold">
                 2
               </div>
-              <div className="w-16 h-1 bg-blue-600"></div>
-              <div className="w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center text-sm font-semibold">
+              <div className="w-16 h-1 bg-primary-200"></div>
+              <div className="w-8 h-8 bg-light-600 text-light-100 rounded-full flex items-center justify-center text-sm font-semibold">
                 3
               </div>
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Add Your Job Target
-          </h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-3xl font-bold text-white">Add Your Job Target</h1>
+          <p className="text-light-100 mt-2">
             Tell us about the role you&apos;re targeting
           </p>
         </div>

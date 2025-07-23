@@ -40,13 +40,13 @@ const CreateJobTargetPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto py-8">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-white">
             Create New Job Target
           </h1>
-          <p className="text-gray-600 mt-2">
+          <p className="text-light-100 mt-2">
             Add a new role you&apos;re targeting for personalized interviews
           </p>
         </div>

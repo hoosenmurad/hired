@@ -9,12 +9,13 @@ import {
   getInterviewsByUserId,
   getLatestInterviews,
 } from "@/lib/actions/general.action";
+import { getProfileById } from "@/lib/actions/profile.action";
+import { getJobTargetById } from "@/lib/actions/job-target.action";
 
 async function Dashboard() {
   const user = await getCurrentUser();
 
   if (!user?.id) {
-    // Handle the case when the user is not logged in, e.g.:
     return <div>Please sign in to view your interviews.</div>;
   }
 
@@ -23,8 +24,44 @@ async function Dashboard() {
     getLatestInterviews({ userId: user.id }),
   ]);
 
-  const hasPastInterviews = (userInterviews?.length ?? 0) > 0;
-  const hasUpcomingInterviews = (allInterview?.length ?? 0) > 0;
+  // Helper function to enrich interview data with personalization info
+  const enrichInterviewData = async (interviews: Interview[]) => {
+    return Promise.all(
+      interviews.map(async (interview) => {
+        let profileName = undefined;
+        let jobTargetTitle = undefined;
+        let jobTargetCompany = undefined;
+
+        // Fetch profile and job target data if available
+        if (interview.profileId) {
+          const profile = await getProfileById(interview.profileId);
+          profileName = profile?.name;
+        }
+
+        if (interview.jobTargetId) {
+          const jobTarget = await getJobTargetById(interview.jobTargetId);
+          jobTargetTitle = jobTarget?.title;
+          jobTargetCompany = jobTarget?.company;
+        }
+
+        return {
+          ...interview,
+          profileName,
+          jobTargetTitle,
+          jobTargetCompany,
+        };
+      })
+    );
+  };
+
+  // Enrich both interview sets with personalization data
+  const [enrichedUserInterviews, enrichedAllInterviews] = await Promise.all([
+    userInterviews ? enrichInterviewData(userInterviews) : [],
+    allInterview ? enrichInterviewData(allInterview) : [],
+  ]);
+
+  const hasPastInterviews = (enrichedUserInterviews?.length ?? 0) > 0;
+  const hasUpcomingInterviews = (enrichedAllInterviews?.length ?? 0) > 0;
 
   return (
     <>
@@ -33,7 +70,7 @@ async function Dashboard() {
 
         <div className="interviews-section">
           {hasPastInterviews ? (
-            userInterviews?.map((interview) => (
+            enrichedUserInterviews?.map((interview) => (
               <InterviewCard
                 key={interview.id}
                 userId={user?.id}
@@ -42,6 +79,10 @@ async function Dashboard() {
                 type={interview.type}
                 specialtySkills={interview.specialtySkills}
                 createdAt={interview.createdAt}
+                isPersonalized={interview.isPersonalized}
+                profileName={interview.profileName}
+                jobTargetTitle={interview.jobTargetTitle}
+                jobTargetCompany={interview.jobTargetCompany}
               />
             ))
           ) : (
@@ -55,7 +96,7 @@ async function Dashboard() {
 
         <div className="interviews-section">
           {hasUpcomingInterviews ? (
-            allInterview?.map((interview) => (
+            enrichedAllInterviews?.map((interview) => (
               <InterviewCard
                 key={interview.id}
                 userId={user?.id}
@@ -64,6 +105,10 @@ async function Dashboard() {
                 type={interview.type}
                 specialtySkills={interview.specialtySkills}
                 createdAt={interview.createdAt}
+                isPersonalized={interview.isPersonalized}
+                profileName={interview.profileName}
+                jobTargetTitle={interview.jobTargetTitle}
+                jobTargetCompany={interview.jobTargetCompany}
               />
             ))
           ) : (

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -9,14 +9,7 @@ import { Form, FormField } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Upload,
-  X,
-  Loader,
-  Plus,
-  Trash2,
-  Link as LinkIcon,
-} from "lucide-react";
+import { Upload, X, Loader, Link as LinkIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useDropzone } from "react-dropzone";
 
@@ -183,283 +176,340 @@ const JobTargetForm = ({
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-8">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold mb-2">Add Job Target</h1>
-        <p className="text-gray-600">
-          Upload job description, paste text, or enter manually
-        </p>
-      </div>
-
-      {/* Job Description Upload Section */}
-      <div className="bg-gray-50 rounded-lg p-6 space-y-4">
-        <h2 className="text-xl font-semibold">
-          Import Job Description (Optional)
-        </h2>
-
-        {/* Input Mode Selection */}
-        <div className="flex space-x-4">
-          <Button
-            type="button"
-            variant={inputMode === "file" ? "default" : "outline"}
-            onClick={() => setInputMode("file")}
-          >
-            <Upload className="h-4 w-4 mr-2" />
-            Upload File
-          </Button>
-          <Button
-            type="button"
-            variant={inputMode === "text" ? "default" : "outline"}
-            onClick={() => setInputMode("text")}
-          >
-            Paste Text
-          </Button>
-          <Button
-            type="button"
-            variant={inputMode === "url" ? "default" : "outline"}
-            onClick={() => setInputMode("url")}
-          >
-            <LinkIcon className="h-4 w-4 mr-2" />
-            From URL
-          </Button>
+    <div className="min-h-screen w-full flex items-center justify-center p-4 font-sans">
+      <div className="w-full max-w-4xl mx-auto space-y-8">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-white mb-2">Add Job Target</h1>
+          <p className="text-light-100 mt-2">
+            Upload job description, paste text, or enter manually
+          </p>
         </div>
 
-        {/* File Upload */}
-        {inputMode === "file" && (
-          <div
-            {...getRootProps()}
-            className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-              isDragActive
-                ? "border-blue-400 bg-blue-50"
-                : "border-gray-300 hover:border-gray-400"
-            }`}
-          >
-            <input {...getInputProps()} />
-            {isParsingJob ? (
-              <div className="flex items-center justify-center space-x-2">
-                <Loader className="animate-spin h-6 w-6" />
-                <span>Parsing job description...</span>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <Upload className="h-8 w-8 mx-auto text-gray-400" />
-                <p className="text-lg">
-                  {isDragActive
-                    ? "Drop job description here"
-                    : "Drag & drop job description here, or click to select"}
-                </p>
-                <p className="text-sm text-gray-500">
-                  Supports PDF and text files
-                </p>
-              </div>
-            )}
-          </div>
-        )}
+        {/* Job Description Upload Section */}
+        <div className="bg-[#191b1f] rounded-2xl shadow-lg p-8 space-y-6">
+          <h2 className="text-2xl font-semibold text-white">
+            Import Job Description (Optional)
+          </h2>
 
-        {/* Text Input */}
-        {inputMode === "text" && (
-          <div className="space-y-4">
-            <Textarea
-              value={textInput}
-              onChange={(e) => setTextInput(e.target.value)}
-              placeholder="Paste the job description here..."
-              rows={6}
-            />
+          {/* Input Mode Selection */}
+          <div className="flex space-x-4">
             <Button
               type="button"
-              onClick={() => parseJobDescription()}
-              disabled={!textInput.trim() || isParsingJob}
+              onClick={() => setInputMode("file")}
+              className={
+                inputMode === "file"
+                  ? "bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full font-bold px-5 cursor-pointer min-h-10"
+                  : "bg-dark-200 text-primary-200 hover:bg-dark-200/80 rounded-full font-bold px-5 cursor-pointer min-h-10"
+              }
             >
-              {isParsingJob ? (
-                <>
-                  <Loader className="animate-spin h-4 w-4 mr-2" />
-                  Parsing...
-                </>
-              ) : (
-                "Parse Job Description"
-              )}
+              <Upload className="h-4 w-4 mr-2" />
+              Upload File
             </Button>
-          </div>
-        )}
-
-        {/* URL Input */}
-        {inputMode === "url" && (
-          <div className="space-y-4">
-            <Input
-              value={urlInput}
-              onChange={(e) => setUrlInput(e.target.value)}
-              placeholder="Enter job posting URL..."
-            />
             <Button
               type="button"
-              onClick={() => parseJobDescription()}
-              disabled={!urlInput.trim() || isParsingJob}
+              onClick={() => setInputMode("text")}
+              className={
+                inputMode === "text"
+                  ? "bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full font-bold px-5 cursor-pointer min-h-10"
+                  : "bg-dark-200 text-primary-200 hover:bg-dark-200/80 rounded-full font-bold px-5 cursor-pointer min-h-10"
+              }
             >
-              {isParsingJob ? (
-                <>
-                  <Loader className="animate-spin h-4 w-4 mr-2" />
-                  Parsing...
-                </>
-              ) : (
-                "Parse from URL"
-              )}
+              Paste Text
+            </Button>
+            <Button
+              type="button"
+              onClick={() => setInputMode("url")}
+              className={
+                inputMode === "url"
+                  ? "bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full font-bold px-5 cursor-pointer min-h-10"
+                  : "bg-dark-200 text-primary-200 hover:bg-dark-200/80 rounded-full font-bold px-5 cursor-pointer min-h-10"
+              }
+            >
+              <LinkIcon className="h-4 w-4 mr-2" />
+              From URL
             </Button>
           </div>
-        )}
-      </div>
 
-      {/* Manual Form */}
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-          {/* Basic Information */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Job Information</h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <div className="space-y-2">
-                    <Label htmlFor="title">Job Title</Label>
-                    <Input
-                      id="title"
-                      placeholder="e.g. Senior Software Engineer"
-                      {...field}
-                    />
-                  </div>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="company"
-                render={({ field }) => (
-                  <div className="space-y-2">
-                    <Label htmlFor="company">Company</Label>
-                    <Input
-                      id="company"
-                      placeholder="e.g. Tech Corp Inc."
-                      {...field}
-                    />
-                  </div>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
+          {/* File Upload */}
+          {inputMode === "file" && (
+            <div
+              {...getRootProps()}
+              className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
+                isDragActive
+                  ? "border-primary-200 bg-dark-200"
+                  : "border-light-600 hover:border-primary-200 bg-dark-200/50"
+              }`}
+            >
+              <input {...getInputProps()} />
+              {isParsingJob ? (
+                <div className="flex items-center justify-center space-x-2">
+                  <Loader className="animate-spin h-6 w-6 text-primary-200" />
+                  <span className="text-white">Parsing job description...</span>
+                </div>
+              ) : (
                 <div className="space-y-2">
-                  <Label htmlFor="description">Job Description</Label>
-                  <Textarea
-                    id="description"
-                    placeholder="Brief overview of the role and what the company does"
-                    rows={4}
-                    {...field}
+                  <Upload className="h-8 w-8 mx-auto text-light-400" />
+                  <p className="text-lg text-white">
+                    {isDragActive
+                      ? "Drop job description here"
+                      : "Drag & drop job description here, or click to select"}
+                  </p>
+                  <p className="text-sm text-light-100">
+                    Supports PDF and text files
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Text Input */}
+          {inputMode === "text" && (
+            <div className="space-y-4">
+              <Textarea
+                value={textInput}
+                onChange={(e) => setTextInput(e.target.value)}
+                placeholder="Paste the job description here..."
+                rows={6}
+                className="bg-dark-200 rounded-lg min-h-12 px-5 placeholder:text-light-100 border-none text-white resize-none"
+              />
+              <Button
+                type="button"
+                onClick={() => parseJobDescription()}
+                disabled={!textInput.trim() || isParsingJob}
+                className="bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full font-bold px-5 cursor-pointer min-h-10 disabled:bg-light-600"
+              >
+                {isParsingJob ? (
+                  <>
+                    <Loader className="animate-spin h-4 w-4 mr-2" />
+                    Parsing...
+                  </>
+                ) : (
+                  "Parse Job Description"
+                )}
+              </Button>
+            </div>
+          )}
+
+          {/* URL Input */}
+          {inputMode === "url" && (
+            <div className="space-y-4">
+              <Input
+                value={urlInput}
+                onChange={(e) => setUrlInput(e.target.value)}
+                placeholder="Enter job posting URL..."
+                className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+              />
+              <Button
+                type="button"
+                onClick={() => parseJobDescription()}
+                disabled={!urlInput.trim() || isParsingJob}
+                className="bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full font-bold px-5 cursor-pointer min-h-10 disabled:bg-light-600"
+              >
+                {isParsingJob ? (
+                  <>
+                    <Loader className="animate-spin h-4 w-4 mr-2" />
+                    Parsing...
+                  </>
+                ) : (
+                  "Parse from URL"
+                )}
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* Manual Form */}
+        <div className="bg-[#191b1f] rounded-2xl shadow-lg p-8">
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(handleSubmit)}
+              className="space-y-8"
+            >
+              {/* Basic Information */}
+              <div className="space-y-6">
+                <h2 className="text-2xl font-semibold text-white">
+                  Job Information
+                </h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="title"
+                          className="text-light-100 font-normal"
+                        >
+                          Job Title
+                        </Label>
+                        <Input
+                          id="title"
+                          placeholder="e.g. Senior Software Engineer"
+                          className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                          {...field}
+                        />
+                      </div>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="company"
+                    render={({ field }) => (
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="company"
+                          className="text-light-100 font-normal"
+                        >
+                          Company
+                        </Label>
+                        <Input
+                          id="company"
+                          placeholder="e.g. Tech Corp Inc."
+                          className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                          {...field}
+                        />
+                      </div>
+                    )}
                   />
                 </div>
-              )}
-            />
-          </div>
 
-          {/* Responsibilities */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Key Responsibilities</h2>
-            <div className="flex gap-2">
-              <Input
-                value={responsibilityInput}
-                onChange={(e) => setResponsibilityInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleAddResponsibility();
-                  }
-                }}
-                placeholder="Type a responsibility and press Enter"
-              />
-              <Button
-                type="button"
-                onClick={handleAddResponsibility}
-                disabled={!responsibilityInput.trim()}
-              >
-                Add
-              </Button>
-            </div>
-            <div className="space-y-2">
-              {form.watch("responsibilities").map((responsibility, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 rounded-lg bg-gray-100"
-                >
-                  <span>{responsibility}</span>
-                  <button
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="description"
+                        className="text-light-100 font-normal"
+                      >
+                        Job Description
+                      </Label>
+                      <Textarea
+                        id="description"
+                        placeholder="Brief overview of the role and what the company does"
+                        rows={4}
+                        className="bg-dark-200 rounded-lg min-h-12 px-5 placeholder:text-light-100 border-none text-white resize-none"
+                        {...field}
+                      />
+                    </div>
+                  )}
+                />
+              </div>
+
+              {/* Responsibilities */}
+              <div className="space-y-6">
+                <h2 className="text-2xl font-semibold text-white">
+                  Key Responsibilities
+                </h2>
+                <div className="flex gap-2">
+                  <Input
+                    value={responsibilityInput}
+                    onChange={(e) => setResponsibilityInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddResponsibility();
+                      }
+                    }}
+                    placeholder="Type a responsibility and press Enter"
+                    className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                  />
+                  <Button
                     type="button"
-                    onClick={() => handleRemoveResponsibility(index)}
-                    className="text-gray-500 hover:text-red-600"
+                    onClick={handleAddResponsibility}
+                    disabled={!responsibilityInput.trim()}
+                    className="bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full font-bold px-5 cursor-pointer min-h-12"
                   >
-                    <X className="h-4 w-4" />
-                  </button>
+                    Add
+                  </Button>
                 </div>
-              ))}
-            </div>
-          </div>
+                <div className="space-y-2">
+                  {form
+                    .watch("responsibilities")
+                    .map((responsibility, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-3 rounded-lg bg-dark-200/50 border border-light-600/20"
+                      >
+                        <span className="text-white">{responsibility}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveResponsibility(index)}
+                          className="text-primary-200 hover:text-destructive-100"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                </div>
+              </div>
 
-          {/* Required Skills */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Required Skills</h2>
-            <div className="flex gap-2">
-              <Input
-                value={skillInput}
-                onChange={(e) => setSkillInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleAddSkill();
-                  }
-                }}
-                placeholder="Type a required skill and press Enter"
-              />
-              <Button
-                type="button"
-                onClick={handleAddSkill}
-                disabled={!skillInput.trim()}
-              >
-                Add
-              </Button>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {form.watch("requiredSkills").map((skill, index) => (
-                <div
-                  key={index}
-                  className="flex items-center px-3 py-1 rounded-lg bg-blue-100 text-blue-800"
-                >
-                  <span>{skill}</span>
-                  <button
+              {/* Required Skills */}
+              <div className="space-y-6">
+                <h2 className="text-2xl font-semibold text-white">
+                  Required Skills
+                </h2>
+                <div className="flex gap-2">
+                  <Input
+                    value={skillInput}
+                    onChange={(e) => setSkillInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddSkill();
+                      }
+                    }}
+                    placeholder="Type a required skill and press Enter"
+                    className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                  />
+                  <Button
                     type="button"
-                    onClick={() => handleRemoveSkill(index)}
-                    className="ml-2 text-blue-600 hover:text-red-600"
+                    onClick={handleAddSkill}
+                    disabled={!skillInput.trim()}
+                    className="bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full font-bold px-5 cursor-pointer min-h-12"
                   >
-                    <X className="h-3 w-3" />
-                  </button>
+                    Add
+                  </Button>
                 </div>
-              ))}
-            </div>
-          </div>
+                <div className="flex flex-wrap gap-2">
+                  {form.watch("requiredSkills").map((skill, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center px-3 py-1 rounded-full bg-dark-200 text-primary-200 border border-primary-200/20"
+                    >
+                      <span>{skill}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveSkill(index)}
+                        className="ml-2 text-primary-200 hover:text-destructive-100"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? (
-              <>
-                <Loader className="animate-spin h-4 w-4 mr-2" />
-                Creating Job Target...
-              </>
-            ) : (
-              "Create Job Target"
-            )}
-          </Button>
-        </form>
-      </Form>
+              <Button
+                type="submit"
+                className="w-full bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full min-h-12 font-bold px-5 cursor-pointer"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <Loader className="animate-spin h-4 w-4 mr-2" />
+                    Creating Job Target...
+                  </>
+                ) : (
+                  "Create Job Target"
+                )}
+              </Button>
+            </form>
+          </Form>
+        </div>
+      </div>
     </div>
   );
 };

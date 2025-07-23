@@ -31,6 +31,7 @@ interface Interview {
   finalized: boolean;
   profileId?: string;
   jobTargetId?: string;
+  isPersonalized?: boolean;
 }
 
 interface Profile {
@@ -87,6 +88,10 @@ interface InterviewCardProps {
   type: string;
   specialtySkills: string[];
   createdAt?: string;
+  isPersonalized?: boolean;
+  profileName?: string;
+  jobTargetTitle?: string;
+  jobTargetCompany?: string;
 }
 
 interface AgentProps {

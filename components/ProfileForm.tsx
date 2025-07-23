@@ -168,314 +168,388 @@ const ProfileForm = ({
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-8">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold mb-2">Create Your Profile</h1>
-        <p className="text-gray-600">
-          Upload your CV for automatic parsing or fill out manually
-        </p>
-      </div>
+    <div className="min-h-screen w-full flex items-center justify-center p-4 font-sans">
+      <div className="w-full max-w-4xl mx-auto space-y-8">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-white mb-2">
+            Create Your Profile
+          </h1>
+          <p className="text-light-100 mt-2">
+            Upload your CV for automatic parsing or fill out manually
+          </p>
+        </div>
 
-      {/* CV Upload Section */}
-      <div className="bg-gray-50 rounded-lg p-6">
-        <h2 className="text-xl font-semibold mb-4">Upload CV (Optional)</h2>
-        <div
-          {...getRootProps()}
-          className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-            isDragActive
-              ? "border-blue-400 bg-blue-50"
-              : "border-gray-300 hover:border-gray-400"
-          }`}
-        >
-          <input {...getInputProps()} />
-          {isParsingCV ? (
-            <div className="flex items-center justify-center space-x-2">
-              <Loader className="animate-spin h-6 w-6" />
-              <span>Parsing CV...</span>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <Upload className="h-8 w-8 mx-auto text-gray-400" />
-              <p className="text-lg">
-                {isDragActive
-                  ? "Drop your CV here"
-                  : "Drag & drop your CV here, or click to select"}
-              </p>
-              <p className="text-sm text-gray-500">
-                Supports PDF and text files
-              </p>
-            </div>
-          )}
+        {/* CV Upload Section */}
+        <div className="bg-[#191b1f] rounded-2xl shadow-lg p-8">
+          <h2 className="text-2xl font-semibold mb-6 text-white">
+            Upload CV (Optional)
+          </h2>
+          <div
+            {...getRootProps()}
+            className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
+              isDragActive
+                ? "border-primary-200 bg-dark-200"
+                : "border-light-600 hover:border-primary-200 bg-dark-200/50"
+            }`}
+          >
+            <input {...getInputProps()} />
+            {isParsingCV ? (
+              <div className="flex items-center justify-center space-x-2">
+                <Loader className="animate-spin h-6 w-6 text-primary-200" />
+                <span className="text-white">Parsing CV...</span>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Upload className="h-8 w-8 mx-auto text-light-400" />
+                <p className="text-lg text-white">
+                  {isDragActive
+                    ? "Drop your CV here"
+                    : "Drag & drop your CV here, or click to select"}
+                </p>
+                <p className="text-sm text-light-100">
+                  Supports PDF and text files
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Manual Form */}
+        <div className="bg-[#191b1f] rounded-2xl shadow-lg p-8">
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(handleSubmit)}
+              className="space-y-8"
+            >
+              {/* Basic Information */}
+              <div className="space-y-6">
+                <h2 className="text-2xl font-semibold text-white">
+                  Basic Information
+                </h2>
+
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="name"
+                        className="text-light-100 font-normal"
+                      >
+                        Full Name
+                      </Label>
+                      <Input
+                        id="name"
+                        placeholder="Enter your full name"
+                        className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                        {...field}
+                      />
+                    </div>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="summary"
+                  render={({ field }) => (
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="summary"
+                        className="text-light-100 font-normal"
+                      >
+                        Professional Summary
+                      </Label>
+                      <Textarea
+                        id="summary"
+                        placeholder="Brief overview of your professional background and expertise"
+                        rows={4}
+                        className="bg-dark-200 rounded-lg min-h-12 px-5 placeholder:text-light-100 border-none text-white resize-none"
+                        {...field}
+                      />
+                    </div>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="goals"
+                  render={({ field }) => (
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="goals"
+                        className="text-light-100 font-normal"
+                      >
+                        Career Goals
+                      </Label>
+                      <Textarea
+                        id="goals"
+                        placeholder="What are your career goals and aspirations?"
+                        rows={3}
+                        className="bg-dark-200 rounded-lg min-h-12 px-5 placeholder:text-light-100 border-none text-white resize-none"
+                        {...field}
+                      />
+                    </div>
+                  )}
+                />
+              </div>
+
+              {/* Skills */}
+              <div className="space-y-6">
+                <h2 className="text-2xl font-semibold text-white">Skills</h2>
+                <div className="flex gap-2">
+                  <Input
+                    value={skillInput}
+                    onChange={(e) => setSkillInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddSkill();
+                      }
+                    }}
+                    placeholder="Type a skill and press Enter"
+                    className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                  />
+                  <Button
+                    type="button"
+                    onClick={handleAddSkill}
+                    disabled={!skillInput.trim()}
+                    className="bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full font-bold px-5 cursor-pointer min-h-12"
+                  >
+                    Add
+                  </Button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {form.watch("skills").map((skill, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center px-3 py-1 rounded-full bg-dark-200 text-primary-200 border border-primary-200/20"
+                    >
+                      <span>{skill}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveSkill(index)}
+                        className="ml-2 text-primary-200 hover:text-destructive-100"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Education */}
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-2xl font-semibold text-white">
+                    Education
+                  </h2>
+                  <Button
+                    type="button"
+                    onClick={() =>
+                      appendEducation({ degree: "", institution: "", year: "" })
+                    }
+                    className="bg-dark-200 text-primary-200 hover:bg-dark-200/80 rounded-full font-bold px-5 cursor-pointer min-h-10"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Education
+                  </Button>
+                </div>
+
+                {educationFields.map((field, index) => (
+                  <div
+                    key={field.id}
+                    className="grid grid-cols-1 md:grid-cols-4 gap-4 p-6 rounded-xl bg-dark-200/50 border border-light-600/20"
+                  >
+                    <FormField
+                      control={form.control}
+                      name={`education.${index}.degree`}
+                      render={({ field }) => (
+                        <div className="space-y-2">
+                          <Label className="text-light-100 font-normal">
+                            Degree
+                          </Label>
+                          <Input
+                            placeholder="e.g. Bachelor of Science"
+                            className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                            {...field}
+                          />
+                        </div>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={`education.${index}.institution`}
+                      render={({ field }) => (
+                        <div className="space-y-2">
+                          <Label className="text-light-100 font-normal">
+                            Institution
+                          </Label>
+                          <Input
+                            placeholder="e.g. University of..."
+                            className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                            {...field}
+                          />
+                        </div>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={`education.${index}.year`}
+                      render={({ field }) => (
+                        <div className="space-y-2">
+                          <Label className="text-light-100 font-normal">
+                            Year
+                          </Label>
+                          <Input
+                            placeholder="e.g. 2020"
+                            className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                            {...field}
+                          />
+                        </div>
+                      )}
+                    />
+                    <div className="flex items-end">
+                      <Button
+                        type="button"
+                        onClick={() => removeEducation(index)}
+                        disabled={educationFields.length === 1}
+                        className="bg-dark-200 text-primary-200 hover:bg-dark-200/80 rounded-full min-h-10 px-3"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Experience */}
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-2xl font-semibold text-white">
+                    Work Experience
+                  </h2>
+                  <Button
+                    type="button"
+                    onClick={() =>
+                      appendExperience({
+                        title: "",
+                        company: "",
+                        duration: "",
+                        description: "",
+                      })
+                    }
+                    className="bg-dark-200 text-primary-200 hover:bg-dark-200/80 rounded-full font-bold px-5 cursor-pointer min-h-10"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Experience
+                  </Button>
+                </div>
+
+                {experienceFields.map((field, index) => (
+                  <div
+                    key={field.id}
+                    className="p-6 rounded-xl bg-dark-200/50 border border-light-600/20 space-y-4"
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <FormField
+                        control={form.control}
+                        name={`experience.${index}.title`}
+                        render={({ field }) => (
+                          <div className="space-y-2">
+                            <Label className="text-light-100 font-normal">
+                              Job Title
+                            </Label>
+                            <Input
+                              placeholder="e.g. Software Engineer"
+                              className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                              {...field}
+                            />
+                          </div>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`experience.${index}.company`}
+                        render={({ field }) => (
+                          <div className="space-y-2">
+                            <Label className="text-light-100 font-normal">
+                              Company
+                            </Label>
+                            <Input
+                              placeholder="e.g. Tech Corp"
+                              className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                              {...field}
+                            />
+                          </div>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`experience.${index}.duration`}
+                        render={({ field }) => (
+                          <div className="space-y-2">
+                            <Label className="text-light-100 font-normal">
+                              Duration
+                            </Label>
+                            <Input
+                              placeholder="e.g. Jan 2020 - Dec 2022"
+                              className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                              {...field}
+                            />
+                          </div>
+                        )}
+                      />
+                    </div>
+                    <FormField
+                      control={form.control}
+                      name={`experience.${index}.description`}
+                      render={({ field }) => (
+                        <div className="space-y-2">
+                          <Label className="text-light-100 font-normal">
+                            Description
+                          </Label>
+                          <Textarea
+                            placeholder="Describe your responsibilities and achievements"
+                            rows={3}
+                            className="bg-dark-200 rounded-lg min-h-12 px-5 placeholder:text-light-100 border-none text-white resize-none"
+                            {...field}
+                          />
+                        </div>
+                      )}
+                    />
+                    <div className="flex justify-end">
+                      <Button
+                        type="button"
+                        onClick={() => removeExperience(index)}
+                        disabled={experienceFields.length === 1}
+                        className="bg-dark-200 text-primary-200 hover:bg-dark-200/80 rounded-full font-bold px-5 cursor-pointer min-h-10"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Remove
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full min-h-12 font-bold px-5 cursor-pointer"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <Loader className="animate-spin h-4 w-4 mr-2" />
+                    Creating Profile...
+                  </>
+                ) : (
+                  "Create Profile"
+                )}
+              </Button>
+            </form>
+          </Form>
         </div>
       </div>
-
-      {/* Manual Form */}
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-          {/* Basic Information */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Basic Information</h2>
-
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input
-                    id="name"
-                    placeholder="Enter your full name"
-                    {...field}
-                  />
-                </div>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="summary"
-              render={({ field }) => (
-                <div className="space-y-2">
-                  <Label htmlFor="summary">Professional Summary</Label>
-                  <Textarea
-                    id="summary"
-                    placeholder="Brief overview of your professional background and expertise"
-                    rows={4}
-                    {...field}
-                  />
-                </div>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="goals"
-              render={({ field }) => (
-                <div className="space-y-2">
-                  <Label htmlFor="goals">Career Goals</Label>
-                  <Textarea
-                    id="goals"
-                    placeholder="What are your career goals and aspirations?"
-                    rows={3}
-                    {...field}
-                  />
-                </div>
-              )}
-            />
-          </div>
-
-          {/* Skills */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Skills</h2>
-            <div className="flex gap-2">
-              <Input
-                value={skillInput}
-                onChange={(e) => setSkillInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleAddSkill();
-                  }
-                }}
-                placeholder="Type a skill and press Enter"
-              />
-              <Button
-                type="button"
-                onClick={handleAddSkill}
-                disabled={!skillInput.trim()}
-              >
-                Add
-              </Button>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {form.watch("skills").map((skill, index) => (
-                <div
-                  key={index}
-                  className="flex items-center px-3 py-1 rounded-lg bg-blue-100 text-blue-800"
-                >
-                  <span>{skill}</span>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveSkill(index)}
-                    className="ml-2 text-blue-600 hover:text-red-600"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Education */}
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold">Education</h2>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() =>
-                  appendEducation({ degree: "", institution: "", year: "" })
-                }
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Education
-              </Button>
-            </div>
-
-            {educationFields.map((field, index) => (
-              <div
-                key={field.id}
-                className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border rounded-lg"
-              >
-                <FormField
-                  control={form.control}
-                  name={`education.${index}.degree`}
-                  render={({ field }) => (
-                    <div className="space-y-2">
-                      <Label>Degree</Label>
-                      <Input
-                        placeholder="e.g. Bachelor of Science"
-                        {...field}
-                      />
-                    </div>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name={`education.${index}.institution`}
-                  render={({ field }) => (
-                    <div className="space-y-2">
-                      <Label>Institution</Label>
-                      <Input placeholder="e.g. University of..." {...field} />
-                    </div>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name={`education.${index}.year`}
-                  render={({ field }) => (
-                    <div className="space-y-2">
-                      <Label>Year</Label>
-                      <Input placeholder="e.g. 2020" {...field} />
-                    </div>
-                  )}
-                />
-                <div className="flex items-end">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => removeEducation(index)}
-                    disabled={educationFields.length === 1}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Experience */}
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold">Work Experience</h2>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() =>
-                  appendExperience({
-                    title: "",
-                    company: "",
-                    duration: "",
-                    description: "",
-                  })
-                }
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Experience
-              </Button>
-            </div>
-
-            {experienceFields.map((field, index) => (
-              <div key={field.id} className="p-4 border rounded-lg space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <FormField
-                    control={form.control}
-                    name={`experience.${index}.title`}
-                    render={({ field }) => (
-                      <div className="space-y-2">
-                        <Label>Job Title</Label>
-                        <Input
-                          placeholder="e.g. Software Engineer"
-                          {...field}
-                        />
-                      </div>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name={`experience.${index}.company`}
-                    render={({ field }) => (
-                      <div className="space-y-2">
-                        <Label>Company</Label>
-                        <Input placeholder="e.g. Tech Corp" {...field} />
-                      </div>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name={`experience.${index}.duration`}
-                    render={({ field }) => (
-                      <div className="space-y-2">
-                        <Label>Duration</Label>
-                        <Input
-                          placeholder="e.g. Jan 2020 - Dec 2022"
-                          {...field}
-                        />
-                      </div>
-                    )}
-                  />
-                </div>
-                <FormField
-                  control={form.control}
-                  name={`experience.${index}.description`}
-                  render={({ field }) => (
-                    <div className="space-y-2">
-                      <Label>Description</Label>
-                      <Textarea
-                        placeholder="Describe your responsibilities and achievements"
-                        rows={3}
-                        {...field}
-                      />
-                    </div>
-                  )}
-                />
-                <div className="flex justify-end">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => removeExperience(index)}
-                    disabled={experienceFields.length === 1}
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Remove
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? (
-              <>
-                <Loader className="animate-spin h-4 w-4 mr-2" />
-                Creating Profile...
-              </>
-            ) : (
-              "Create Profile"
-            )}
-          </Button>
-        </form>
-      </Form>
     </div>
   );
 };

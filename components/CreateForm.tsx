@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useUser } from "@clerk/nextjs";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Form, FormField } from "@/components/ui/form";
@@ -16,11 +16,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { X, Upload, Loader } from "lucide-react";
+import { X, Upload, Loader, User, Briefcase, Sparkles } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { getProfileByUserId } from "@/lib/actions/profile.action";
+import { getJobTargetsByUserId } from "@/lib/actions/job-target.action";
+import Link from "next/link";
 
 const formSchema = z.object({
+  profileId: z.string().optional(),
+  jobTargetId: z.string().optional(),
   type: z.string().min(1, { message: "This field is required." }),
   role: z.string().min(1, { message: "This field is required." }),
   level: z.string().min(1, { message: "This field is required." }),
@@ -42,10 +47,16 @@ const CreateForm = () => {
   const [skillInput, setSkillInput] = useState("");
   const [profilePic, setProfilePic] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const [usePersonalization, setUsePersonalization] = useState(false);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [jobTargets, setJobTargets] = useState<JobTarget[]>([]);
+  const [dataLoading, setDataLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      profileId: "",
+      jobTargetId: "",
       type: "",
       role: "",
       level: "",
@@ -53,6 +64,37 @@ const CreateForm = () => {
       amount: 5,
     },
   });
+
+  // Load user's profiles and job targets
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (!user?.id) return;
+
+      setDataLoading(true);
+      try {
+        const [userProfile, userJobTargets] = await Promise.all([
+          getProfileByUserId(user.id),
+          getJobTargetsByUserId(user.id),
+        ]);
+
+        if (userProfile) {
+          setProfiles([userProfile]);
+        }
+
+        if (userJobTargets) {
+          setJobTargets(userJobTargets);
+        }
+      } catch (error) {
+        console.error("Error loading user data:", error);
+      } finally {
+        setDataLoading(false);
+      }
+    };
+
+    if (user?.id) {
+      loadUserData();
+    }
+  }, [user?.id]);
 
   const handleAddSkill = () => {
     const skill = skillInput.trim();
@@ -80,14 +122,20 @@ const CreateForm = () => {
     }
     setLoading(true);
     try {
+      const payload = {
+        ...values,
+        specialtySkills: values.specialtySkills.join(", "),
+        userid: user?.id,
+        ...(usePersonalization &&
+          values.profileId && { profileId: values.profileId }),
+        ...(usePersonalization &&
+          values.jobTargetId && { jobTargetId: values.jobTargetId }),
+      };
+
       const response = await fetch("/api/vapi/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...values,
-          specialtySkills: values.specialtySkills.join(", "),
-          userid: user?.id,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) throw new Error("Submission failed");
@@ -117,6 +165,175 @@ const CreateForm = () => {
         </header>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {/* Personalization Section */}
+            <div className="bg-[#27282f] rounded-lg p-6 space-y-4">
+              <div className="flex items-center space-x-2">
+                <Sparkles className="h-5 w-5 text-primary-200" />
+                <h3 className="text-lg font-semibold">
+                  Personalize Your Interview
+                </h3>
+              </div>
+              <p className="text-[#8e96ac] text-sm">
+                Use your profile and job targets for AI-generated questions
+                tailored to your experience and goals.
+              </p>
+
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="use-personalization"
+                  checked={usePersonalization}
+                  onChange={(e) => setUsePersonalization(e.target.checked)}
+                  className="rounded border-gray-300"
+                />
+                <Label htmlFor="use-personalization" className="text-white">
+                  Use personalized interview questions
+                </Label>
+              </div>
+
+              {usePersonalization && (
+                <div className="space-y-4 mt-4">
+                  {dataLoading ? (
+                    <div className="flex items-center justify-center py-4">
+                      <Loader className="animate-spin h-5 w-5 text-primary-200" />
+                      <span className="ml-2 text-[#8e96ac]">
+                        Loading your data...
+                      </span>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Profile Selection */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label className="flex items-center space-x-2">
+                            <User className="h-4 w-4" />
+                            <span>Select Your Profile</span>
+                          </Label>
+                          {profiles.length === 0 && (
+                            <Link href="/onboarding/profile">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="text-xs"
+                              >
+                                Create Profile
+                              </Button>
+                            </Link>
+                          )}
+                        </div>
+                        {profiles.length > 0 ? (
+                          <FormField
+                            control={form.control}
+                            name="profileId"
+                            render={({ field }) => (
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
+                                <SelectTrigger className="bg-[#191b1f] border-gray-600">
+                                  <SelectValue placeholder="Choose your profile" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-[#191b1f] text-white border-gray-700">
+                                  {profiles.map((profile) => (
+                                    <SelectItem
+                                      key={profile.id}
+                                      value={profile.id}
+                                      className="focus:bg-[#27282f] focus:text-white"
+                                    >
+                                      <div className="flex items-center space-x-2">
+                                        <User className="h-4 w-4" />
+                                        <span>{profile.name}</span>
+                                      </div>
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            )}
+                          />
+                        ) : (
+                          <p className="text-[#8e96ac] text-sm">
+                            No profile found. Create one to enable personalized
+                            interviews.
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Job Target Selection */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label className="flex items-center space-x-2">
+                            <Briefcase className="h-4 w-4" />
+                            <span>Select Job Target</span>
+                          </Label>
+                          {jobTargets.length === 0 && (
+                            <Link href="/job-targets/create">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="text-xs"
+                              >
+                                Create Job Target
+                              </Button>
+                            </Link>
+                          )}
+                        </div>
+                        {jobTargets.length > 0 ? (
+                          <FormField
+                            control={form.control}
+                            name="jobTargetId"
+                            render={({ field }) => (
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
+                                <SelectTrigger className="bg-[#191b1f] border-gray-600">
+                                  <SelectValue placeholder="Choose target role" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-[#191b1f] text-white border-gray-700">
+                                  {jobTargets.map((jobTarget) => (
+                                    <SelectItem
+                                      key={jobTarget.id}
+                                      value={jobTarget.id}
+                                      className="focus:bg-[#27282f] focus:text-white"
+                                    >
+                                      <div>
+                                        <div className="font-medium">
+                                          {jobTarget.title}
+                                        </div>
+                                        <div className="text-xs text-[#8e96ac]">
+                                          {jobTarget.company}
+                                        </div>
+                                      </div>
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            )}
+                          />
+                        ) : (
+                          <p className="text-[#8e96ac] text-sm">
+                            No job targets found. Create one to enable
+                            personalized interviews.
+                          </p>
+                        )}
+                      </div>
+
+                      {profiles.length > 0 && jobTargets.length > 0 && (
+                        <div className="bg-[#191b1f] rounded-lg p-3 mt-4">
+                          <p className="text-sm text-primary-200">
+                            ✨ Your interview will be personalized based on your
+                            profile and target role!
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+
             <div className="grid grid-cols-1 gap-6">
               {/* Interview Type */}
               <FormField
