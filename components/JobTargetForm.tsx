@@ -227,15 +227,14 @@ const JobTargetForm = ({
         <div className="text-center">
           <h1 className="text-4xl font-bold text-white mb-2">Add Job Target</h1>
           <p className="text-light-100 mt-2">
-            Upload job description (text file), paste text, or enter manually.
-            PDF support coming soon!
+            Upload job description, paste text, link or enter manually.
           </p>
         </div>
 
         {/* Job Description Upload Section */}
         <div className="bg-[#191b1f] rounded-2xl shadow-lg p-8 space-y-6">
           <h2 className="text-2xl font-semibold text-white">
-            Import Job Description (Optional)
+            Import Job Description
           </h2>
 
           {/* Input Mode Selection */}
