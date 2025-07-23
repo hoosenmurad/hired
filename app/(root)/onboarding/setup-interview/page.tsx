@@ -33,7 +33,7 @@ type InterviewSetupFormData = z.infer<typeof interviewSetupSchema>;
 
 const InterviewSetupPage = () => {
   const [loading, setLoading] = useState(false);
-  const [dataLoading, setDataLoading] = useState(true);
+
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [jobTargets, setJobTargets] = useState<JobTarget[]>([]);
   const router = useRouter();
@@ -72,8 +72,6 @@ const InterviewSetupPage = () => {
       } catch (error) {
         console.error("Error loading data:", error);
         toast.error("Failed to load profile and job targets");
-      } finally {
-        setDataLoading(false);
       }
     };
 
@@ -167,17 +165,6 @@ Please create personalized questions that:
 4. Include behavioral questions related to their experience
 5. Include technical questions relevant to the role requirements`;
   };
-
-  if (dataLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <Loader className="animate-spin h-8 w-8 mx-auto mb-4" />
-          <p>Loading your profile and job targets...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background">

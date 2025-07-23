@@ -1,15 +1,51 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/actions/auth.action";
 import { getJobTargetsByUserId } from "@/lib/actions/job-target.action";
-import { Plus, Briefcase, Building, Target, Edit } from "lucide-react";
+import { Plus, Briefcase, Building, Target, Edit, Loader } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-const JobTargetsPage = async () => {
-  const user = await getCurrentUser();
-  if (!user) redirect("/sign-in");
+const JobTargetsPage = () => {
+  const [jobTargets, setJobTargets] = useState<JobTarget[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
+  const router = useRouter();
 
-  const jobTargets = await getJobTargetsByUserId(user.id);
+  useEffect(() => {
+    const fetchData = async () => {
+      const currentUser = await getCurrentUser();
+      if (!currentUser) {
+        redirect("/sign-in");
+        return;
+      }
+
+      const userJobTargets = await getJobTargetsByUserId(currentUser.id);
+      setJobTargets(userJobTargets);
+      setLoading(false);
+    };
+
+    fetchData();
+  }, []);
+
+  const handleNavigate = (path: string) => {
+    setNavigatingTo(path);
+    router.push(path);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex items-center space-x-2">
+          <Loader className="animate-spin h-6 w-6 text-primary-200" />
+          <span className="text-white">Loading job targets...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -131,12 +167,27 @@ const JobTargetsPage = async () => {
                       View Details
                     </Link>
                   </Button>
-                  <Button asChild className="flex-1 btn-primary">
-                    <Link
-                      href={`/onboarding/setup-interview?jobTargetId=${jobTarget.id}`}
-                    >
-                      Create Interview
-                    </Link>
+                  <Button
+                    onClick={() =>
+                      handleNavigate(
+                        `/onboarding/setup-interview?jobTargetId=${jobTarget.id}`
+                      )
+                    }
+                    disabled={
+                      navigatingTo ===
+                      `/onboarding/setup-interview?jobTargetId=${jobTarget.id}`
+                    }
+                    className="flex-1 btn-primary"
+                  >
+                    {navigatingTo ===
+                    `/onboarding/setup-interview?jobTargetId=${jobTarget.id}` ? (
+                      <>
+                        <Loader className="animate-spin h-4 w-4 mr-2" />
+                        Loading...
+                      </>
+                    ) : (
+                      "Create Interview"
+                    )}
                   </Button>
                 </div>
               </div>
