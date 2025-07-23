@@ -5,7 +5,12 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Form, FormField } from "@/components/ui/form";
+import {
+  Form,
+  FormField,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -164,7 +169,6 @@ const ProfileForm = ({
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      "application/pdf": [".pdf"],
       "text/plain": [".txt"],
     },
     maxFiles: 1,
@@ -187,10 +191,18 @@ const ProfileForm = ({
   };
 
   const handleSubmit = async (data: ProfileFormData) => {
-    await onSubmit({
-      userId: "", // Will be set by the parent component
-      ...data,
-    });
+    console.log("Form submission started", data);
+    console.log("Form errors:", form.formState.errors);
+
+    try {
+      await onSubmit({
+        userId: "", // Will be set by the parent component
+        ...data,
+      });
+    } catch (error) {
+      console.error("Error in form submission:", error);
+      toast.error("Failed to submit form. Please try again.");
+    }
   };
 
   return (
@@ -201,7 +213,8 @@ const ProfileForm = ({
             Create Your Profile
           </h1>
           <p className="text-light-100 mt-2">
-            Upload your CV for automatic parsing or fill out manually
+            Upload your CV (text file) for automatic parsing or fill out
+            manually. PDF support coming soon!
           </p>
         </div>
 
@@ -233,7 +246,7 @@ const ProfileForm = ({
                     : "Drag & drop your CV here, or click to select"}
                 </p>
                 <p className="text-sm text-light-100">
-                  Supports PDF and text files
+                  Supports text files (.txt only). PDF support coming soon!
                 </p>
               </div>
             )}
@@ -264,12 +277,15 @@ const ProfileForm = ({
                       >
                         Full Name
                       </Label>
-                      <Input
-                        id="name"
-                        placeholder="Enter your full name"
-                        className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
-                        {...field}
-                      />
+                      <FormControl>
+                        <Input
+                          id="name"
+                          placeholder="Enter your full name"
+                          className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
                     </div>
                   )}
                 />
@@ -285,13 +301,16 @@ const ProfileForm = ({
                       >
                         Professional Summary
                       </Label>
-                      <Textarea
-                        id="summary"
-                        placeholder="Brief overview of your professional background and expertise"
-                        rows={4}
-                        className="bg-dark-200 rounded-lg min-h-12 px-5 placeholder:text-light-100 border-none text-white resize-none"
-                        {...field}
-                      />
+                      <FormControl>
+                        <Textarea
+                          id="summary"
+                          placeholder="Brief overview of your professional background and expertise"
+                          rows={4}
+                          className="bg-dark-200 rounded-lg min-h-12 px-5 placeholder:text-light-100 border-none text-white resize-none"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
                     </div>
                   )}
                 />
@@ -307,61 +326,73 @@ const ProfileForm = ({
                       >
                         Career Goals
                       </Label>
-                      <Textarea
-                        id="goals"
-                        placeholder="What are your career goals and aspirations?"
-                        rows={3}
-                        className="bg-dark-200 rounded-lg min-h-12 px-5 placeholder:text-light-100 border-none text-white resize-none"
-                        {...field}
-                      />
+                      <FormControl>
+                        <Textarea
+                          id="goals"
+                          placeholder="What are your career goals and aspirations?"
+                          rows={3}
+                          className="bg-dark-200 rounded-lg min-h-12 px-5 placeholder:text-light-100 border-none text-white resize-none"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
                     </div>
                   )}
                 />
               </div>
 
               {/* Skills */}
-              <div className="space-y-6">
-                <h2 className="text-2xl font-semibold text-white">Skills</h2>
-                <div className="flex gap-2">
-                  <Input
-                    value={skillInput}
-                    onChange={(e) => setSkillInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleAddSkill();
-                      }
-                    }}
-                    placeholder="Type a skill and press Enter"
-                    className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
-                  />
-                  <Button
-                    type="button"
-                    onClick={handleAddSkill}
-                    disabled={!skillInput.trim()}
-                    className="bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full font-bold px-5 cursor-pointer min-h-12"
-                  >
-                    Add
-                  </Button>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {form.watch("skills").map((skill, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center px-3 py-1 rounded-full bg-dark-200 text-primary-200 border border-primary-200/20"
-                    >
-                      <span>{skill}</span>
-                      <button
+              <FormField
+                control={form.control}
+                name="skills"
+                render={() => (
+                  <div className="space-y-6">
+                    <h2 className="text-2xl font-semibold text-white">
+                      Skills
+                    </h2>
+                    <div className="flex gap-2">
+                      <Input
+                        value={skillInput}
+                        onChange={(e) => setSkillInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleAddSkill();
+                          }
+                        }}
+                        placeholder="Type a skill and press Enter"
+                        className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                      />
+                      <Button
                         type="button"
-                        onClick={() => handleRemoveSkill(index)}
-                        className="ml-2 text-primary-200 hover:text-destructive-100"
+                        onClick={handleAddSkill}
+                        disabled={!skillInput.trim()}
+                        className="bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full font-bold px-5 cursor-pointer min-h-12"
                       >
-                        <X className="h-3 w-3" />
-                      </button>
+                        Add
+                      </Button>
                     </div>
-                  ))}
-                </div>
-              </div>
+                    <div className="flex flex-wrap gap-2">
+                      {form.watch("skills").map((skill, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center px-3 py-1 rounded-full bg-dark-200 text-primary-200 border border-primary-200/20"
+                        >
+                          <span>{skill}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveSkill(index)}
+                            className="ml-2 text-primary-200 hover:text-destructive-100"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <FormMessage />
+                  </div>
+                )}
+              />
 
               {/* Education */}
               <div className="space-y-6">
@@ -394,11 +425,14 @@ const ProfileForm = ({
                           <Label className="text-light-100 font-normal">
                             Degree
                           </Label>
-                          <Input
-                            placeholder="e.g. Bachelor of Science"
-                            className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
-                            {...field}
-                          />
+                          <FormControl>
+                            <Input
+                              placeholder="e.g. Bachelor of Science"
+                              className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
                         </div>
                       )}
                     />
@@ -410,11 +444,14 @@ const ProfileForm = ({
                           <Label className="text-light-100 font-normal">
                             Institution
                           </Label>
-                          <Input
-                            placeholder="e.g. University of..."
-                            className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
-                            {...field}
-                          />
+                          <FormControl>
+                            <Input
+                              placeholder="e.g. University of..."
+                              className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
                         </div>
                       )}
                     />
@@ -426,11 +463,14 @@ const ProfileForm = ({
                           <Label className="text-light-100 font-normal">
                             Year
                           </Label>
-                          <Input
-                            placeholder="e.g. 2020"
-                            className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
-                            {...field}
-                          />
+                          <FormControl>
+                            <Input
+                              placeholder="e.g. 2020"
+                              className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
                         </div>
                       )}
                     />
@@ -485,11 +525,14 @@ const ProfileForm = ({
                             <Label className="text-light-100 font-normal">
                               Job Title
                             </Label>
-                            <Input
-                              placeholder="e.g. Software Engineer"
-                              className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
-                              {...field}
-                            />
+                            <FormControl>
+                              <Input
+                                placeholder="e.g. Software Engineer"
+                                className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
                           </div>
                         )}
                       />
@@ -501,11 +544,14 @@ const ProfileForm = ({
                             <Label className="text-light-100 font-normal">
                               Company
                             </Label>
-                            <Input
-                              placeholder="e.g. Tech Corp"
-                              className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
-                              {...field}
-                            />
+                            <FormControl>
+                              <Input
+                                placeholder="e.g. Tech Corp"
+                                className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
                           </div>
                         )}
                       />
@@ -517,11 +563,14 @@ const ProfileForm = ({
                             <Label className="text-light-100 font-normal">
                               Duration
                             </Label>
-                            <Input
-                              placeholder="e.g. Jan 2020 - Dec 2022"
-                              className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
-                              {...field}
-                            />
+                            <FormControl>
+                              <Input
+                                placeholder="e.g. Jan 2020 - Dec 2022"
+                                className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
                           </div>
                         )}
                       />
@@ -534,12 +583,15 @@ const ProfileForm = ({
                           <Label className="text-light-100 font-normal">
                             Description
                           </Label>
-                          <Textarea
-                            placeholder="Describe your responsibilities and achievements"
-                            rows={3}
-                            className="bg-dark-200 rounded-lg min-h-12 px-5 placeholder:text-light-100 border-none text-white resize-none"
-                            {...field}
-                          />
+                          <FormControl>
+                            <Textarea
+                              placeholder="Describe your responsibilities and achievements"
+                              rows={3}
+                              className="bg-dark-200 rounded-lg min-h-12 px-5 placeholder:text-light-100 border-none text-white resize-none"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
                         </div>
                       )}
                     />

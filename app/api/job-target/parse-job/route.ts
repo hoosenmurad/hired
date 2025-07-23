@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { generateObject } from "ai";
 import { google } from "@ai-sdk/google";
 import { z } from "zod";
-import pdf from "pdf-parse";
 
 const parsedJobSchema = z.object({
   title: z.string().optional(),
@@ -26,13 +25,13 @@ export async function POST(request: NextRequest) {
     if (file) {
       console.log("Processing file:", file.name, file.type, file.size);
 
-      // Validate file size (max 10MB)
-      if (file.size > 10 * 1024 * 1024) {
+      // Validate file size (max 5MB for text files)
+      if (file.size > 5 * 1024 * 1024) {
         return NextResponse.json(
           {
             success: false,
             error:
-              "File size too large. Please upload a file smaller than 10MB.",
+              "File size too large. Please upload a file smaller than 5MB.",
           },
           { status: 400 }
         );
@@ -42,29 +41,16 @@ export async function POST(request: NextRequest) {
       const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
 
-      if (file.type === "application/pdf") {
-        try {
-          const pdfData = await pdf(buffer);
-          jobText = pdfData.text;
-          console.log("PDF text extracted, length:", jobText.length);
-        } catch (pdfError) {
-          console.error("PDF parsing error:", pdfError);
-          return NextResponse.json(
-            {
-              success: false,
-              error:
-                "Failed to parse PDF file. Please ensure it's a valid PDF.",
-            },
-            { status: 400 }
-          );
-        }
-      } else if (file.type.includes("text")) {
+      if (file.type.includes("text") || file.name.endsWith(".txt")) {
+        console.log("Processing text file");
         jobText = buffer.toString("utf-8");
       } else {
+        console.log("Unsupported file type:", file.type);
         return NextResponse.json(
           {
             success: false,
-            error: "Unsupported file type. Please upload a PDF or text file.",
+            error:
+              "Currently only text files (.txt) are supported. PDF support will be added soon.",
           },
           { status: 400 }
         );
@@ -110,7 +96,7 @@ export async function POST(request: NextRequest) {
         {
           success: false,
           error:
-            "The job description appears to be empty or too short to parse. Please provide more content.",
+            "The job description appears to be empty or too short to parse. Please provide at least 50 characters.",
         },
         { status: 400 }
       );

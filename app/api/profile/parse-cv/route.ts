@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { generateObject } from "ai";
 import { google } from "@ai-sdk/google";
 import { z } from "zod";
-import pdf from "pdf-parse";
 
 const parsedCVSchema = z.object({
   name: z.string().optional(),
@@ -46,12 +45,12 @@ export async function POST(request: NextRequest) {
 
     console.log("File received:", file.name, file.type, file.size);
 
-    // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
+    // Validate file size (max 5MB for text files)
+    if (file.size > 5 * 1024 * 1024) {
       return NextResponse.json(
         {
           success: false,
-          error: "File size too large. Please upload a file smaller than 10MB.",
+          error: "File size too large. Please upload a file smaller than 5MB.",
         },
         { status: 400 }
       );
@@ -63,24 +62,8 @@ export async function POST(request: NextRequest) {
 
     let extractedText = "";
 
-    // Extract text based on file type
-    if (file.type === "application/pdf") {
-      console.log("Processing PDF file");
-      try {
-        const pdfData = await pdf(buffer);
-        extractedText = pdfData.text;
-        console.log("PDF text extracted, length:", extractedText.length);
-      } catch (pdfError) {
-        console.error("PDF parsing error:", pdfError);
-        return NextResponse.json(
-          {
-            success: false,
-            error: "Failed to parse PDF file. Please ensure it's a valid PDF.",
-          },
-          { status: 400 }
-        );
-      }
-    } else if (file.type.includes("text")) {
+    // Only handle text files for now
+    if (file.type.includes("text") || file.name.endsWith(".txt")) {
       console.log("Processing text file");
       extractedText = buffer.toString("utf-8");
     } else {
@@ -88,7 +71,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: "Unsupported file type. Please upload a PDF or text file.",
+          error:
+            "Currently only text files (.txt) are supported. PDF support will be added soon.",
         },
         { status: 400 }
       );
@@ -100,7 +84,7 @@ export async function POST(request: NextRequest) {
         {
           success: false,
           error:
-            "The file appears to be empty or too short to parse. Please upload a proper CV.",
+            "The file appears to be empty or too short to parse. Please upload a proper CV with at least 50 characters.",
         },
         { status: 400 }
       );

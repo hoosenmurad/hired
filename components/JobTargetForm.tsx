@@ -66,7 +66,6 @@ const JobTargetForm = ({
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      "application/pdf": [".pdf"],
       "text/plain": [".txt"],
     },
     maxFiles: 1,
@@ -210,7 +209,8 @@ const JobTargetForm = ({
         <div className="text-center">
           <h1 className="text-4xl font-bold text-white mb-2">Add Job Target</h1>
           <p className="text-light-100 mt-2">
-            Upload job description, paste text, or enter manually
+            Upload job description (text file), paste text, or enter manually.
+            PDF support coming soon!
           </p>
         </div>
 
@@ -284,7 +284,7 @@ const JobTargetForm = ({
                       : "Drag & drop job description here, or click to select"}
                   </p>
                   <p className="text-sm text-light-100">
-                    Supports PDF and text files
+                    Supports text files (.txt only). PDF support coming soon!
                   </p>
                 </div>
               )}
