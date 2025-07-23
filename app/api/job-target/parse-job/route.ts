@@ -4,11 +4,15 @@ import { google } from "@ai-sdk/google";
 import { z } from "zod";
 
 const parsedJobSchema = z.object({
-  title: z.string().optional(),
-  company: z.string().optional(),
-  responsibilities: z.array(z.string()).optional(),
-  requiredSkills: z.array(z.string()).optional(),
-  description: z.string().optional(),
+  title: z.string().min(1, "Job title is required"),
+  company: z.string().min(1, "Company name is required"),
+  responsibilities: z
+    .array(z.string().min(1))
+    .min(1, "At least one responsibility is required"),
+  requiredSkills: z
+    .array(z.string().min(1))
+    .min(1, "At least one skill is required"),
+  description: z.string().min(10, "Job description is required"),
 });
 
 export async function POST(request: NextRequest) {
@@ -109,23 +113,46 @@ export async function POST(request: NextRequest) {
       model: google("gemini-2.0-flash-001"),
       schema: parsedJobSchema,
       prompt: `
-        Parse the following job description and extract structured information:
+        You are a job description parser. Extract ALL the following information from this job posting.
+        You MUST provide all fields - if information seems unclear, make reasonable inferences based on context.
 
         Job Description:
         ${jobText.substring(0, 10000)} ${
         jobText.length > 10000 ? "...(truncated)" : ""
       }
 
-        Please extract:
-        1. Job title
-        2. Company name
-        3. Key responsibilities (as an array of strings)
-        4. Required skills and qualifications (as an array of strings)
-        5. Overall job description (summary of the role)
+        REQUIRED EXTRACTION:
 
-        If any information is not available or unclear, omit that field rather than guessing.
-        For responsibilities, break down main duties and expectations.
-        For required skills, include both technical skills and qualifications mentioned.
+        1. **Job Title**: Extract the exact job title/position name
+        
+        2. **Company Name**: Find the company/organization name
+        
+        3. **Job Description**: Create a comprehensive summary that includes:
+           - What the role involves
+           - The company/department context  
+           - Key objectives and goals
+           - Any relevant company information
+           
+        4. **Key Responsibilities**: Extract ALL duties, tasks, and responsibilities mentioned. Include:
+           - Day-to-day tasks
+           - Project responsibilities  
+           - Collaboration duties
+           - Strategic initiatives
+           - Reporting responsibilities
+           Break these into clear, actionable bullet points.
+           
+        5. **Required Skills**: Extract ALL skills, qualifications, and requirements mentioned. Include:
+           - Years of experience required
+           - Technical skills and tools
+           - Soft skills and abilities
+           - Educational requirements
+           - Industry experience
+           - Preferred qualifications
+           
+        FORMAT: Return structured data where responsibilities and skills are arrays of strings.
+        Each responsibility and skill should be a complete, standalone statement.
+        
+        IMPORTANT: You must extract information for ALL fields. Do not leave any field empty.
       `,
     });
 

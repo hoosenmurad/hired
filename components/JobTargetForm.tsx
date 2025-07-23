@@ -5,7 +5,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Form, FormField } from "@/components/ui/form";
+import {
+  Form,
+  FormField,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -79,6 +84,11 @@ const JobTargetForm = ({
       if (file) {
         formData.append("jobDescription", file);
       } else if (inputMode === "text" && textInput.trim()) {
+        if (textInput.trim().length < 50) {
+          toast.error("Job description must be at least 50 characters long");
+          setIsParsingJob(false);
+          return;
+        }
         formData.append("textInput", textInput);
       } else if (inputMode === "url" && urlInput.trim()) {
         formData.append("urlInput", urlInput);
@@ -197,10 +207,18 @@ const JobTargetForm = ({
   };
 
   const handleSubmit = async (data: JobTargetFormData) => {
-    await onSubmit({
-      userId: "", // Will be set by the parent component
-      ...data,
-    });
+    console.log("Submitting form data:", data);
+    console.log("Form errors:", form.formState.errors);
+
+    try {
+      await onSubmit({
+        userId: "", // Will be set by the parent component
+        ...data,
+      });
+    } catch (error) {
+      console.error("Error in form submission:", error);
+      toast.error("Failed to submit form. Please try again.");
+    }
   };
 
   return (
@@ -294,18 +312,36 @@ const JobTargetForm = ({
           {/* Text Input */}
           {inputMode === "text" && (
             <div className="space-y-4">
-              <Textarea
-                value={textInput}
-                onChange={(e) => setTextInput(e.target.value)}
-                placeholder="Paste the job description here..."
-                rows={6}
-                className="bg-dark-200 rounded-lg min-h-12 px-5 placeholder:text-light-100 border-none text-white resize-none"
-              />
+              <div className="space-y-2">
+                <Textarea
+                  value={textInput}
+                  onChange={(e) => setTextInput(e.target.value)}
+                  placeholder="Paste the job description here..."
+                  rows={6}
+                  className="bg-dark-200 rounded-lg min-h-12 px-5 placeholder:text-light-100 border-none text-white resize-none"
+                />
+                <div className="flex justify-between items-center text-sm">
+                  <span
+                    className={`${
+                      textInput.length < 50
+                        ? "text-destructive"
+                        : "text-light-100"
+                    }`}
+                  >
+                    {textInput.length}/50 characters minimum
+                  </span>
+                  {textInput.length > 0 && textInput.length < 50 && (
+                    <span className="text-destructive text-xs">
+                      Job description must be at least 50 characters long
+                    </span>
+                  )}
+                </div>
+              </div>
               <Button
                 type="button"
                 onClick={() => parseJobDescription()}
-                disabled={!textInput.trim() || isParsingJob}
-                className="bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full font-bold px-5 cursor-pointer min-h-10 disabled:bg-light-600"
+                disabled={textInput.length < 50 || isParsingJob}
+                className="bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full font-bold px-5 cursor-pointer min-h-10 disabled:bg-light-600 disabled:cursor-not-allowed"
               >
                 {isParsingJob ? (
                   <>
@@ -372,12 +408,15 @@ const JobTargetForm = ({
                         >
                           Job Title
                         </Label>
-                        <Input
-                          id="title"
-                          placeholder="e.g. Senior Software Engineer"
-                          className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
-                          {...field}
-                        />
+                        <FormControl>
+                          <Input
+                            id="title"
+                            placeholder="e.g. Senior Software Engineer"
+                            className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
                       </div>
                     )}
                   />
@@ -393,12 +432,15 @@ const JobTargetForm = ({
                         >
                           Company
                         </Label>
-                        <Input
-                          id="company"
-                          placeholder="e.g. Tech Corp Inc."
-                          className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
-                          {...field}
-                        />
+                        <FormControl>
+                          <Input
+                            id="company"
+                            placeholder="e.g. Tech Corp Inc."
+                            className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
                       </div>
                     )}
                   />
@@ -415,111 +457,128 @@ const JobTargetForm = ({
                       >
                         Job Description
                       </Label>
-                      <Textarea
-                        id="description"
-                        placeholder="Brief overview of the role and what the company does"
-                        rows={4}
-                        className="bg-dark-200 rounded-lg min-h-12 px-5 placeholder:text-light-100 border-none text-white resize-none"
-                        {...field}
-                      />
+                      <FormControl>
+                        <Textarea
+                          id="description"
+                          placeholder="Brief overview of the role and what the company does"
+                          rows={4}
+                          className="bg-dark-200 rounded-lg min-h-12 px-5 placeholder:text-light-100 border-none text-white resize-none"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
                     </div>
                   )}
                 />
               </div>
 
               {/* Responsibilities */}
-              <div className="space-y-6">
-                <h2 className="text-2xl font-semibold text-white">
-                  Key Responsibilities
-                </h2>
-                <div className="flex gap-2">
-                  <Input
-                    value={responsibilityInput}
-                    onChange={(e) => setResponsibilityInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleAddResponsibility();
-                      }
-                    }}
-                    placeholder="Type a responsibility and press Enter"
-                    className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
-                  />
-                  <Button
-                    type="button"
-                    onClick={handleAddResponsibility}
-                    disabled={!responsibilityInput.trim()}
-                    className="bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full font-bold px-5 cursor-pointer min-h-12"
-                  >
-                    Add
-                  </Button>
-                </div>
-                <div className="space-y-2">
-                  {form
-                    .watch("responsibilities")
-                    .map((responsibility, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between p-3 rounded-lg bg-dark-200/50 border border-light-600/20"
+              <FormField
+                control={form.control}
+                name="responsibilities"
+                render={() => (
+                  <div className="space-y-6">
+                    <h2 className="text-2xl font-semibold text-white">
+                      Key Responsibilities
+                    </h2>
+                    <div className="flex gap-2">
+                      <Input
+                        value={responsibilityInput}
+                        onChange={(e) => setResponsibilityInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleAddResponsibility();
+                          }
+                        }}
+                        placeholder="Type a responsibility and press Enter"
+                        className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                      />
+                      <Button
+                        type="button"
+                        onClick={handleAddResponsibility}
+                        disabled={!responsibilityInput.trim()}
+                        className="bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full font-bold px-5 cursor-pointer min-h-12"
                       >
-                        <span className="text-white">{responsibility}</span>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveResponsibility(index)}
-                          className="text-primary-200 hover:text-destructive-100"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      </div>
-                    ))}
-                </div>
-              </div>
+                        Add
+                      </Button>
+                    </div>
+                    <div className="space-y-2">
+                      {form
+                        .watch("responsibilities")
+                        .map((responsibility, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between p-3 rounded-lg bg-dark-200/50 border border-light-600/20"
+                          >
+                            <span className="text-white">{responsibility}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveResponsibility(index)}
+                              className="text-primary-200 hover:text-destructive-100"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                        ))}
+                    </div>
+                    <FormMessage />
+                  </div>
+                )}
+              />
 
               {/* Required Skills */}
-              <div className="space-y-6">
-                <h2 className="text-2xl font-semibold text-white">
-                  Required Skills
-                </h2>
-                <div className="flex gap-2">
-                  <Input
-                    value={skillInput}
-                    onChange={(e) => setSkillInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleAddSkill();
-                      }
-                    }}
-                    placeholder="Type a required skill and press Enter"
-                    className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
-                  />
-                  <Button
-                    type="button"
-                    onClick={handleAddSkill}
-                    disabled={!skillInput.trim()}
-                    className="bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full font-bold px-5 cursor-pointer min-h-12"
-                  >
-                    Add
-                  </Button>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {form.watch("requiredSkills").map((skill, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center px-3 py-1 rounded-full bg-dark-200 text-primary-200 border border-primary-200/20"
-                    >
-                      <span>{skill}</span>
-                      <button
+              <FormField
+                control={form.control}
+                name="requiredSkills"
+                render={() => (
+                  <div className="space-y-6">
+                    <h2 className="text-2xl font-semibold text-white">
+                      Required Skills
+                    </h2>
+                    <div className="flex gap-2">
+                      <Input
+                        value={skillInput}
+                        onChange={(e) => setSkillInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleAddSkill();
+                          }
+                        }}
+                        placeholder="Type a required skill and press Enter"
+                        className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                      />
+                      <Button
                         type="button"
-                        onClick={() => handleRemoveSkill(index)}
-                        className="ml-2 text-primary-200 hover:text-destructive-100"
+                        onClick={handleAddSkill}
+                        disabled={!skillInput.trim()}
+                        className="bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full font-bold px-5 cursor-pointer min-h-12"
                       >
-                        <X className="h-3 w-3" />
-                      </button>
+                        Add
+                      </Button>
                     </div>
-                  ))}
-                </div>
-              </div>
+                    <div className="flex flex-wrap gap-2">
+                      {form.watch("requiredSkills").map((skill, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center px-3 py-1 rounded-full bg-dark-200 text-primary-200 border border-primary-200/20"
+                        >
+                          <span>{skill}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveSkill(index)}
+                            className="ml-2 text-primary-200 hover:text-destructive-100"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <FormMessage />
+                  </div>
+                )}
+              />
 
               <Button
                 type="submit"
