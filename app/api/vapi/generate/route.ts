@@ -1,8 +1,10 @@
 import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
+import { auth } from "@clerk/nextjs/server";
 
 import { db } from "@/firebase/admin";
 import { getRandomInterviewCover } from "@/lib/utils";
+import { getUserPlanInfo } from "@/lib/billing";
 
 // Use the global type definitions for consistency
 // These match the interfaces defined in types/index.d.ts
@@ -33,9 +35,9 @@ interface JobTargetData {
   userId: string;
   title: string;
   company: string;
-  responsibilities: string[];
-  requiredSkills: string[];
   description: string;
+  requiredSkills: string[];
+  responsibilities: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -73,6 +75,28 @@ export async function POST(request: Request) {
   } = await request.json();
 
   try {
+    // Check if user is authenticated and has a subscription
+    const { userId } = await auth();
+    if (!userId) {
+      return Response.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    // Get user's plan info
+    const planInfo = await getUserPlanInfo();
+    if (!planInfo.isSubscribed) {
+      return Response.json(
+        {
+          success: false,
+          error: "Subscription required",
+          message: "Please subscribe to a plan to create interviews.",
+        },
+        { status: 403 }
+      );
+    }
+
     let prompt = "";
     let isPersonalized = false;
     let interviewData: InterviewData = {
@@ -134,51 +158,37 @@ INTERVIEW PARAMETERS:
 - Number of Questions: ${amount}
 - Additional Skills Context: ${specialtySkills || "Not specified"}
 
-PERSONALIZATION INSTRUCTIONS:
-1. Create questions that directly relate the candidate's specific experience to the target role
-2. Reference their actual skills and background in behavioral questions
-3. Ask technical questions aligned with both their expertise and job requirements
-4. Consider their career goals when framing growth/motivation questions
-5. Match the specified tone: professional (formal), casual (conversational), or challenging (rigorous)
-6. Adjust difficulty: easy (basic concepts), medium (practical application), hard (complex scenarios)
+INSTRUCTIONS:
+1. Create ${amount} highly personalized interview questions that directly relate to the candidate's experience and the target role
+2. Consider the candidate's background when formulating questions
+3. Match the interview type, tone, and difficulty level specified
+4. Ensure questions test both relevant skills and cultural fit
+5. Make questions voice-assistant friendly (no special characters like "/" or "*")
+6. Balance technical and behavioral questions based on the interview type
+7. Reference specific experiences or skills when relevant
 
-QUESTION GUIDELINES:
-- Make questions voice-assistant friendly (no special characters like "/" or "*")
-- Create a balanced mix based on the interview type specified
-- Ensure questions test job-relevant competencies
-- Include follow-up potential in complex scenarios
-- Make each question unique and targeted
-
-Return exactly ${amount} personalized questions formatted as:
+Return the questions formatted like this:
 ["Question 1", "Question 2", "Question 3"]`;
-
-          isPersonalized = true;
 
           // Set personalized interview data
           interviewData = {
             ...interviewData,
-            profileId,
-            jobTargetId,
+            profileId: profileId,
+            jobTargetId: jobTargetId,
             role: `${jobTarget.title} at ${jobTarget.company}`,
-            type: type || "personalized",
+            type: type || "mixed",
             level: level || difficulty,
-            specialtySkills: specialtySkills
-              ? specialtySkills.split(",")
-              : jobTarget.requiredSkills,
-            techstack: specialtySkills
-              ? specialtySkills.split(",").map((skill: string) => skill.trim())
-              : jobTarget.requiredSkills,
+            specialtySkills: jobTarget.requiredSkills,
+            techstack: jobTarget.requiredSkills,
             tone,
             difficulty,
             isPersonalized: true,
           };
+
+          isPersonalized = true;
         }
-      } catch (personalizationError) {
-        console.warn(
-          "Failed to fetch personalization data, falling back to standard interview:",
-          personalizationError
-        );
-        // Fall through to standard interview generation
+      } catch {
+        // Fall back to standard interview if personalization fails
       }
     }
 
@@ -229,14 +239,76 @@ Return the questions formatted like this:
       prompt: prompt,
     });
 
-    // Parse and store the interview
-    interviewData.questions = JSON.parse(questions);
+    // Parse and store the interview with cleaning and fallback handling
+    let parsedQuestions;
+    try {
+      let cleanedQuestions = questions.trim();
+
+      // Remove markdown code blocks if present
+      cleanedQuestions = cleanedQuestions
+        .replace(/^```json\s*/, "")
+        .replace(/\s*```$/, "");
+      cleanedQuestions = cleanedQuestions
+        .replace(/^```\s*/, "")
+        .replace(/\s*```$/, "");
+
+      // Remove any leading/trailing whitespace
+      cleanedQuestions = cleanedQuestions.trim();
+
+      parsedQuestions = JSON.parse(cleanedQuestions);
+
+      // Validate that it's an array
+      if (!Array.isArray(parsedQuestions)) {
+        throw new Error("Response is not an array");
+      }
+    } catch {
+      // Fallback: try to extract questions from text using multiple patterns
+      let fallbackQuestions = [];
+
+      // Try to find JSON array in the text
+      const jsonMatch = questions.match(/\[[\s\S]*\]/);
+      if (jsonMatch) {
+        try {
+          fallbackQuestions = JSON.parse(jsonMatch[0]);
+        } catch {
+          // If that fails, try text extraction
+          fallbackQuestions = questions
+            .split(/\d+\.|\n-|\n\*|Here are \d+ |Here are the \d+ /)
+            .filter((q) => q.trim().length > 10)
+            .map((q) => q.trim().replace(/^["'\s]+|["'\s]+$/g, ""))
+            .filter((q) => q.length > 0)
+            .slice(0, amount);
+        }
+      } else {
+        // Extract from numbered/bulleted list
+        fallbackQuestions = questions
+          .split(/\d+\.|\n-|\n\*|Here are \d+ |Here are the \d+ /)
+          .filter((q) => q.trim().length > 10)
+          .map((q) => q.trim().replace(/^["'\s]+|["'\s]+$/g, ""))
+          .filter((q) => q.length > 0)
+          .slice(0, amount);
+      }
+
+      if (fallbackQuestions.length === 0) {
+        return Response.json(
+          {
+            success: false,
+            error: "Failed to generate valid questions",
+            details: "AI response could not be parsed",
+          },
+          { status: 500 }
+        );
+      }
+
+      parsedQuestions = fallbackQuestions;
+    }
+
+    interviewData.questions = parsedQuestions;
 
     await db.collection("interviews").add(interviewData);
 
     return Response.json({ success: true }, { status: 200 });
   } catch (error) {
-    console.error("Error:", error);
     return Response.json({ success: false, error: error }, { status: 500 });
   }
 }

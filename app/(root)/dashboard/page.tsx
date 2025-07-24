@@ -3,6 +3,7 @@
 
 //import { Button } from "@/components/ui/button";
 import InterviewCard from "@/components/InterviewCard";
+import PlanStatus from "@/components/PlanStatus";
 
 import { getCurrentUser } from "@/lib/actions/auth.action";
 import {
@@ -66,6 +67,11 @@ async function Dashboard() {
 
   return (
     <>
+      {/* Plan Status Section */}
+      <section className="mb-8">
+        <PlanStatus />
+      </section>
+
       <section className="flex flex-col gap-6 mt-8">
         <h2>Your Interviews</h2>
 

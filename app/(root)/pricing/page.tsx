@@ -15,7 +15,7 @@ const Pricing = () => {
         </p>
       </div>
 
-      {/* Pricing Table */}
+      {/* Clerk Pricing Table */}
       <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 1rem" }}>
         <PricingTable
           appearance={{
@@ -48,27 +48,68 @@ const Pricing = () => {
               // Card content
               cardHeader: "text-center mb-6",
               cardTitle: "text-white text-2xl font-bold mb-2",
-              cardDescription: "text-light-100 text-sm leading-relaxed",
+              cardDescription: "text-light-100 text-sm mb-4",
               cardPrice: "text-center mb-6",
-              cardPriceText: "text-primary-200 text-4xl font-bold",
-              cardPricePeriod: "text-light-100 text-base",
+              cardPriceText: "text-4xl font-bold text-primary-200",
+              cardPriceSubtext: "text-light-100 text-base",
 
               // Features
-              cardFeatureList: "space-y-3 mb-8",
-              cardFeatureListItem:
-                "text-light-100 text-sm flex items-center gap-3",
-              cardFeatureListItemIcon: "text-primary-200 text-base",
+              cardFeatures: "space-y-3 mb-8",
+              cardFeature: "flex items-center gap-3 text-light-100",
+              cardFeatureIcon: "text-primary-200 flex-shrink-0",
 
-              // Buttons
-              cardButton:
-                "bg-primary-200 text-dark-100 border-0 rounded-full py-3 px-6 font-bold text-base w-full hover:bg-primary-100 hover:scale-105 transition-all",
+              // CTA Button
+              cardCta: "w-full",
+              cardCtaButton:
+                "w-full px-6 py-3 rounded-full font-bold transition-colors bg-primary-200 text-dark-100 hover:bg-primary-100",
+              cardCtaButtonPopular:
+                "w-full px-6 py-3 rounded-full font-bold transition-colors bg-primary-200 text-dark-100 hover:bg-primary-100",
 
-              // Badge
-              cardBadge:
-                "bg-primary-200 text-dark-100 px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wide mb-4 inline-block",
+              // Footer
+              cardFooter: "text-center mt-6",
+              cardFooterText: "text-light-100 text-sm",
             },
           }}
         />
+      </div>
+
+      {/* Additional Info */}
+      <div className="max-w-4xl mx-auto px-6 mt-16 text-center">
+        <div className="bg-gradient-to-r from-dark-200/50 to-dark-300/50 border border-white/10 rounded-2xl p-8">
+          <h3 className="text-2xl font-bold mb-4">Why Choose HiredAI?</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-light-100">
+            <div className="space-y-2">
+              <div className="w-12 h-12 bg-primary-200/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <span className="text-primary-200 text-xl">🎯</span>
+              </div>
+              <h4 className="font-semibold">Personalized Training</h4>
+              <p className="text-sm">
+                AI-powered questions tailored to your experience and target
+                roles
+              </p>
+            </div>
+            <div className="space-y-2">
+              <div className="w-12 h-12 bg-primary-200/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <span className="text-primary-200 text-xl">🗣️</span>
+              </div>
+              <h4 className="font-semibold">Voice Interviews</h4>
+              <p className="text-sm">
+                Practice with realistic voice interactions, just like real
+                interviews
+              </p>
+            </div>
+            <div className="space-y-2">
+              <div className="w-12 h-12 bg-primary-200/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <span className="text-primary-200 text-xl">📊</span>
+              </div>
+              <h4 className="font-semibold">Detailed Feedback</h4>
+              <p className="text-sm">
+                Comprehensive performance analysis to improve your interview
+                skills
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

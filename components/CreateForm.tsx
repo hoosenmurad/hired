@@ -1,14 +1,16 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { useUser } from "@clerk/nextjs";
-import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+import { useState, useEffect } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Form, FormField } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -16,12 +18,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { X, Upload, Loader, User, Briefcase, Sparkles } from "lucide-react";
-import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
+import { useUser } from "@clerk/nextjs";
+import { Loader, X, Sparkles, Upload } from "lucide-react";
 import { getProfileByUserId } from "@/lib/actions/profile.action";
 import { getJobTargetsByUserId } from "@/lib/actions/job-target.action";
-import Link from "next/link";
 
 const formSchema = z
   .object({
@@ -74,7 +74,6 @@ const CreateForm = () => {
   const [usePersonalization, setUsePersonalization] = useState(false);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [jobTargets, setJobTargets] = useState<JobTarget[]>([]);
-  const [dataLoading, setDataLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -96,7 +95,7 @@ const CreateForm = () => {
     const loadUserData = async () => {
       if (!user?.id) return;
 
-      setDataLoading(true);
+      setLoading(true);
       try {
         const [userProfile, userJobTargets] = await Promise.all([
           getProfileByUserId(user.id),
@@ -113,7 +112,7 @@ const CreateForm = () => {
       } catch (error) {
         console.error("Error loading user data:", error);
       } finally {
-        setDataLoading(false);
+        setLoading(false);
       }
     };
 
@@ -280,144 +279,84 @@ const CreateForm = () => {
                 </Label>
               </div>
 
+              {/* Profile and Job Target Selection - shown when personalization is enabled */}
               {usePersonalization && (
-                <div className="space-y-4 mt-4">
-                  {dataLoading ? (
-                    <div className="flex items-center justify-center py-4">
-                      <Loader className="animate-spin h-5 w-5 text-primary-200" />
-                      <span className="ml-2 text-[#8e96ac]">
-                        Loading your data...
-                      </span>
-                    </div>
-                  ) : (
-                    <>
-                      {/* Profile Selection */}
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="flex items-center space-x-2">
-                            <User className="h-4 w-4" />
-                            <span>Select Your Profile</span>
-                          </Label>
-                          {profiles.length === 0 && (
-                            <Link href="/onboarding/profile">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                className="text-xs"
-                              >
-                                Create Profile
-                              </Button>
-                            </Link>
-                          )}
-                        </div>
-                        {profiles.length > 0 ? (
-                          <FormField
-                            control={form.control}
-                            name="profileId"
-                            render={({ field }) => (
-                              <Select
-                                onValueChange={field.onChange}
-                                value={field.value}
-                              >
-                                <SelectTrigger className="bg-[#191b1f] border-gray-600">
-                                  <SelectValue placeholder="Choose your profile" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-[#191b1f] text-white border-gray-700">
-                                  {profiles.map((profile) => (
-                                    <SelectItem
-                                      key={profile.id}
-                                      value={profile.id}
-                                      className="focus:bg-[#27282f] focus:text-white"
-                                    >
-                                      <div className="flex items-center space-x-2">
-                                        <User className="h-4 w-4" />
-                                        <span>{profile.name}</span>
-                                      </div>
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            )}
-                          />
-                        ) : (
-                          <p className="text-[#8e96ac] text-sm">
-                            No profile found. Create one to enable personalized
-                            interviews.
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Job Target Selection */}
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="flex items-center space-x-2">
-                            <Briefcase className="h-4 w-4" />
-                            <span>Select Job Target</span>
-                          </Label>
-                          {jobTargets.length === 0 && (
-                            <Link href="/job-targets/create">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                className="text-xs"
-                              >
-                                Create Job Target
-                              </Button>
-                            </Link>
-                          )}
-                        </div>
-                        {jobTargets.length > 0 ? (
-                          <FormField
-                            control={form.control}
-                            name="jobTargetId"
-                            render={({ field }) => (
-                              <Select
-                                onValueChange={field.onChange}
-                                value={field.value}
-                              >
-                                <SelectTrigger className="bg-[#191b1f] border-gray-600">
-                                  <SelectValue placeholder="Choose target role" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-[#191b1f] text-white border-gray-700">
-                                  {jobTargets.map((jobTarget) => (
-                                    <SelectItem
-                                      key={jobTarget.id}
-                                      value={jobTarget.id}
-                                      className="focus:bg-[#27282f] focus:text-white"
-                                    >
-                                      <div>
-                                        <div className="font-medium">
-                                          {jobTarget.title}
-                                        </div>
-                                        <div className="text-xs text-[#8e96ac]">
-                                          {jobTarget.company}
-                                        </div>
-                                      </div>
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            )}
-                          />
-                        ) : (
-                          <p className="text-[#8e96ac] text-sm">
-                            No job targets found. Create one to enable
-                            personalized interviews.
-                          </p>
-                        )}
-                      </div>
-
-                      {profiles.length > 0 && jobTargets.length > 0 && (
-                        <div className="bg-[#191b1f] rounded-lg p-3 mt-4">
-                          <p className="text-sm text-primary-200">
-                            ✨ Your interview will be personalized based on your
-                            profile and target role!
-                          </p>
+                <div className="space-y-4 mt-4 p-4 bg-[#1e1f24] rounded-lg border border-[#3a3b42]">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Profile Selection */}
+                    <FormField
+                      control={form.control}
+                      name="profileId"
+                      render={({ field }) => (
+                        <div className="space-y-2">
+                          <Label htmlFor="profile-select">Select Profile</Label>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value || ""}
+                          >
+                            <SelectTrigger
+                              id="profile-select"
+                              className="w-full bg-[#27282f] border-none rounded-lg h-12 px-4"
+                            >
+                              <SelectValue placeholder="Choose a profile" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-[#191b1f] text-white border-gray-700">
+                              {profiles.map((profile) => (
+                                <SelectItem
+                                  key={profile.id}
+                                  value={profile.id}
+                                  className="focus:bg-[#27282f] focus:text-white"
+                                >
+                                  {profile.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                       )}
-                    </>
+                    />
+
+                    {/* Job Target Selection */}
+                    <FormField
+                      control={form.control}
+                      name="jobTargetId"
+                      render={({ field }) => (
+                        <div className="space-y-2">
+                          <Label htmlFor="job-target-select">
+                            Select Job Target
+                          </Label>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value || ""}
+                          >
+                            <SelectTrigger
+                              id="job-target-select"
+                              className="w-full bg-[#27282f] border-none rounded-lg h-12 px-4"
+                            >
+                              <SelectValue placeholder="Choose a job target" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-[#191b1f] text-white border-gray-700">
+                              {jobTargets.map((jobTarget) => (
+                                <SelectItem
+                                  key={jobTarget.id}
+                                  value={jobTarget.id}
+                                  className="focus:bg-[#27282f] focus:text-white"
+                                >
+                                  {jobTarget.title} at {jobTarget.company}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                    />
+                  </div>
+
+                  {profiles.length === 0 && jobTargets.length === 0 && (
+                    <p className="text-[#8e96ac] text-sm text-center py-4">
+                      No profiles or job targets found. Please create them first
+                      in your dashboard.
+                    </p>
                   )}
                 </div>
               )}
