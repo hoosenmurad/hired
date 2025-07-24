@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard" },
@@ -20,37 +21,41 @@ const NavItems = ({
   onItemClick?: () => void;
 }) => {
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <nav
       className={cn(
-        "flex gap-4",
-        isMobile ? "flex-col items-stretch w-full" : "items-center"
+        "flex items-center gap-4",
+        isMobile ? "flex-col items-stretch w-full" : ""
       )}
     >
-      {navItems.map(({ label, href }) => (
-        <Link
-          href={href}
-          key={label}
-          onClick={onItemClick}
-          className={cn(
-            "transition-colors hover:text-primary-200",
-            pathname === href && "text-primary font-semibold",
-            href === "/create" && pathname.startsWith("/create") && "hidden",
-            href === "/pricing" && pathname.startsWith("/pricing") && "hidden",
-            href === "/dashboard" &&
-              pathname.startsWith("/dashboard") &&
-              "hidden",
-            href === "/profile" && pathname.startsWith("/profile") && "hidden",
-            href === "/job-targets" &&
-              pathname.startsWith("/job-targets") &&
-              "hidden",
-            isMobile && "py-2 px-4 text-center rounded-md hover:bg-dark-300/50"
-          )}
-        >
-          {label}
-        </Link>
-      ))}
+      {navItems.map(({ label, href }) => {
+        // Only apply pathname-dependent classes after component mounts
+        const isActive = mounted && pathname === href;
+        const shouldHide = mounted && pathname.startsWith(href) && href !== "/";
+
+        return (
+          <Link
+            href={href}
+            key={label}
+            onClick={onItemClick}
+            className={cn(
+              "transition-colors hover:text-primary-200",
+              isActive && "text-primary font-semibold",
+              shouldHide && "hidden",
+              isMobile &&
+                "py-2 px-4 text-center rounded-md hover:bg-dark-300/50"
+            )}
+          >
+            {label}
+          </Link>
+        );
+      })}
     </nav>
   );
 };

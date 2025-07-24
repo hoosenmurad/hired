@@ -4,10 +4,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import NavItems from "@/components/NavItems";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
     <>
       <nav className="navbar relative">
@@ -63,7 +69,7 @@ const Navbar = () => {
       </nav>
 
       {/* Mobile Menu Backdrop */}
-      {menuOpen && (
+      {mounted && menuOpen && (
         <div
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-20 sm:hidden"
           onClick={() => setMenuOpen(false)}
@@ -71,7 +77,7 @@ const Navbar = () => {
       )}
 
       {/* Mobile Dropdown */}
-      {menuOpen && (
+      {mounted && menuOpen && (
         <div className="fixed top-[72px] right-4 left-4 bg-dark-200 shadow-2xl flex flex-col gap-6 p-6 animate-fadeIn sm:hidden z-30 rounded-xl border border-gray-700/50 max-h-[calc(100vh-100px)] overflow-y-auto">
           <div className="flex flex-col gap-4">
             <NavItems isMobile={true} onItemClick={() => setMenuOpen(false)} />
