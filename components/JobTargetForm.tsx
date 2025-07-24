@@ -72,6 +72,7 @@ const JobTargetForm = ({
     onDrop,
     accept: {
       "text/plain": [".txt"],
+      "application/pdf": [".pdf"],
     },
     maxFiles: 1,
   });
@@ -301,7 +302,7 @@ const JobTargetForm = ({
                       : "Drag & drop job description here, or click to select"}
                   </p>
                   <p className="text-sm text-light-100">
-                    Supports text files (.txt only). PDF support coming soon!
+                    Supports PDF (.pdf) and text files (.txt). Maximum 10MB.
                   </p>
                 </div>
               )}
