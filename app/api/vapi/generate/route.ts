@@ -52,6 +52,7 @@ interface InterviewData {
   type?: string;
   level?: string;
   specialtySkills?: string[];
+  techstack?: string[];
   tone?: string;
   difficulty?: string;
   isPersonalized?: boolean;
@@ -164,6 +165,9 @@ Return exactly ${amount} personalized questions formatted as:
             specialtySkills: specialtySkills
               ? specialtySkills.split(",")
               : jobTarget.requiredSkills,
+            techstack: specialtySkills
+              ? specialtySkills.split(",").map((skill: string) => skill.trim())
+              : jobTarget.requiredSkills,
             tone,
             difficulty,
             isPersonalized: true,
@@ -211,6 +215,9 @@ Return the questions formatted like this:
         type: type,
         level: level,
         specialtySkills: specialtySkills ? specialtySkills.split(",") : [],
+        techstack: specialtySkills
+          ? specialtySkills.split(",").map((skill: string) => skill.trim())
+          : [],
         tone,
         difficulty,
         isPersonalized: false,

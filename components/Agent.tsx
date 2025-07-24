@@ -117,29 +117,48 @@ const Agent = ({
   const handleCall = async () => {
     setCallStatus(CallStatus.CONNECTING);
 
-    if (type === "generate") {
-      await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, {
-        variableValues: {
-          username: userName,
-          userid: userId,
-        },
-      });
-    } else {
-      let formattedQuestions = "";
-      if (questions) {
+    try {
+      if (type === "generate") {
+        if (!process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID) {
+          console.error("VAPI_WORKFLOW_ID environment variable is not set");
+          setCallStatus(CallStatus.INACTIVE);
+          return;
+        }
+
+        await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID, {
+          variableValues: {
+            username: userName,
+            userid: userId,
+          },
+        });
+      } else {
+        // Validate questions before starting interview
+        if (!questions || questions.length === 0) {
+          console.error("No questions provided for interview");
+          setCallStatus(CallStatus.INACTIVE);
+          return;
+        }
+
+        let formattedQuestions = "";
         formattedQuestions = questions
           .map((question) => `- ${question}`)
           .join("\n");
+
+        console.log("Starting interview with questions:", formattedQuestions);
+
+        await vapi.start(interviewer, {
+          variableValues: {
+            questions: formattedQuestions,
+          },
+          maxDurationSeconds:
+            questions && questions.length > 0
+              ? questions.length * 2 * 60
+              : undefined,
+        });
       }
-      await vapi.start(interviewer, {
-        variableValues: {
-          questions: formattedQuestions,
-        },
-        maxDurationSeconds:
-          questions && questions.length > 0
-            ? questions.length * 2 * 60
-            : undefined,
-      });
+    } catch (error) {
+      console.error("Error starting Vapi call:", error);
+      setCallStatus(CallStatus.INACTIVE);
     }
   };
 
