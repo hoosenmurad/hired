@@ -14,11 +14,11 @@ export default function LandingPage() {
             roles. Get detailed feedback with per-question analysis.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Button asChild className="btn-primary flex-1">
+          <div className="flex flex-col sm:flex-row gap-4 items-center sm:items-stretch">
+            <Button asChild className="btn-primary flex-1 min-w-fit">
               <Link href="/onboarding/profile">Get Started</Link>
             </Button>
-            <Button asChild variant="outline" className="flex-1">
+            <Button asChild variant="outline" className="flex-1 min-w-fit">
               <Link href="/create">Quick Interview</Link>
             </Button>
           </div>
