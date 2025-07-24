@@ -97,26 +97,25 @@ const InterviewSetupPage = () => {
         return;
       }
 
-      // Generate dynamic prompt based on profile + job target + settings
-      const dynamicPrompt = generateInterviewPrompt(
-        selectedProfile,
-        selectedJobTarget,
-        data
-      );
+      // Create unified payload for the main API endpoint
+      const payload = {
+        profileId: data.profileId,
+        jobTargetId: data.jobTargetId,
+        type: "personalized",
+        role: `${selectedJobTarget.title} at ${selectedJobTarget.company}`,
+        level: data.difficulty,
+        specialtySkills: selectedJobTarget.requiredSkills.join(", "),
+        amount: data.questionCount,
+        tone: data.tone,
+        difficulty: data.difficulty,
+        userid: user.id,
+      };
 
-      // Create interview with personalized content
-      const response = await fetch("/api/vapi/generate-personalized", {
+      // Create interview with personalized content using unified endpoint
+      const response = await fetch("/api/vapi/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          profileId: data.profileId,
-          jobTargetId: data.jobTargetId,
-          tone: data.tone,
-          difficulty: data.difficulty,
-          amount: data.questionCount,
-          userid: user.id,
-          dynamicPrompt,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) throw new Error("Failed to create interview");
@@ -131,40 +130,15 @@ const InterviewSetupPage = () => {
     }
   };
 
-  const generateInterviewPrompt = (
-    profile: Profile,
-    jobTarget: JobTarget,
-    settings: InterviewSetupFormData
-  ) => {
-    return `Create interview questions for a candidate with the following profile:
-
-CANDIDATE PROFILE:
-- Name: ${profile.name}
-- Summary: ${profile.summary}
-- Key Skills: ${profile.skills.join(", ")}
-- Goals: ${profile.goals}
-- Experience: ${profile.experience
-      .map((exp) => `${exp.title} at ${exp.company}`)
-      .join(", ")}
-
-TARGET ROLE:
-- Position: ${jobTarget.title} at ${jobTarget.company}
-- Required Skills: ${jobTarget.requiredSkills.join(", ")}
-- Key Responsibilities: ${jobTarget.responsibilities.join(", ")}
-- Job Description: ${jobTarget.description}
-
-INTERVIEW SETTINGS:
-- Tone: ${settings.tone}
-- Difficulty: ${settings.difficulty}
-- Question Count: ${settings.questionCount}
-
-Please create personalized questions that:
-1. Assess the candidate's fit for this specific role
-2. Test relevant skills from both their background and job requirements
-3. Match the specified tone and difficulty level
-4. Include behavioral questions related to their experience
-5. Include technical questions relevant to the role requirements`;
-  };
+  // Remove the old generateInterviewPrompt function since it's now handled in the API
+  // const generateInterviewPrompt = (
+  //   profile: Profile,
+  //   jobTarget: JobTarget,
+  //   settings: InterviewSetupFormData
+  // ) => {
+  //   return `Create interview questions for a candidate with the following profile:
+  //   // ... rest of the prompt
+  // };
 
   return (
     <div className="min-h-screen bg-background">
