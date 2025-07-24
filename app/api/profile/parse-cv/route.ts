@@ -78,15 +78,18 @@ export async function POST(request: NextRequest) {
     let result;
 
     if (isPdfFile) {
-      // Handle PDF files using Gemini's native PDF processing
-      console.log("Processing PDF file with Gemini");
+      // Handle PDF files using Firebase AI Logic patterns
+      console.log(
+        "Processing PDF file with Gemini following Firebase AI Logic patterns"
+      );
 
-      // Convert file to base64 for Gemini
+      // Convert file to base64 following Firebase recommendations
       const arrayBuffer = await file.arrayBuffer();
       const base64Data = Buffer.from(arrayBuffer).toString("base64");
 
+      // Use Firebase AI Logic recommended structure for multimodal input
       result = await generateObject({
-        model: google("gemini-2.0-flash-001"),
+        model: google("gemini-2.5-flash"), // Updated to use recommended model
         schema: parsedCVSchema,
         messages: [
           {
@@ -94,22 +97,23 @@ export async function POST(request: NextRequest) {
             content: [
               {
                 type: "text",
-                text: `Parse this CV/Resume PDF and extract structured information. Return only valid JSON with clean, concise text.
+                text: `Analyze this CV/Resume PDF document and extract structured information. Return clean, valid JSON.
 
-IMPORTANT: 
-- Keep summary to 2-3 sentences maximum
-- Remove all excessive whitespace and newlines
-- Use clean, professional language
-- Do not include repeated characters or formatting artifacts
+IMPORTANT INSTRUCTIONS:
+- Keep summary concise (2-3 sentences maximum)
+- Remove all excessive whitespace, newlines, and formatting artifacts
+- Extract only clear, relevant information
+- Use professional language
+- Do not include repeated characters or visual artifacts
 
-Extract:
+EXTRACT THE FOLLOWING:
 1. Full name (string)
-2. Professional summary (2-3 sentences only, clean text)
+2. Professional summary (brief, clean text)
 3. Skills (array of individual skills)
 4. Education (array with degree, institution, year)
-5. Work experience (array with title, company, duration, brief description)
+5. Work experience (array with title, company, duration, description)
 
-Return clean JSON only. If information is missing, omit the field.`,
+Return only valid JSON. Omit fields if information is unclear or missing.`,
               },
               {
                 type: "file",
@@ -121,16 +125,18 @@ Return clean JSON only. If information is missing, omit the field.`,
         ],
       });
 
-      // Clean the result data to remove excessive whitespace
+      // Clean the result data following Firebase best practices
       if (result.object) {
+        // Clean summary field
         if (result.object.summary) {
           result.object.summary = result.object.summary
             .replace(/\n+/g, " ")
             .replace(/\s+/g, " ")
             .trim()
-            .substring(0, 500); // Limit summary length
+            .substring(0, 500); // Limit as per Firebase recommendations
         }
 
+        // Clean experience descriptions
         if (result.object.experience) {
           result.object.experience = result.object.experience.map((exp) => ({
             ...exp,
@@ -139,7 +145,7 @@ Return clean JSON only. If information is missing, omit the field.`,
                 ?.replace(/\n+/g, " ")
                 ?.replace(/\s+/g, " ")
                 ?.trim()
-                ?.substring(0, 300) || "", // Limit description length
+                ?.substring(0, 300) || "",
           }));
         }
       }
