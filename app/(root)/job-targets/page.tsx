@@ -87,7 +87,7 @@ const JobTargetsPage = () => {
                 className="bg-[#191b1f] rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow border border-light-600/10"
               >
                 <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 min-w-0 flex-1 max-w-[70%] lg:max-w-[80%]">
                     <Briefcase className="h-5 w-5 text-primary-200" />
                     <h3 className="font-semibold text-lg truncate text-white">
                       {jobTarget.title}
