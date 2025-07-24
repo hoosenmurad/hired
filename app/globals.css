@@ -326,6 +326,10 @@
   animation: fadeIn 0.3s ease-in-out;
 }
 
+@utility animate-pulse-gentle {
+  animation: pulseGentle 2s ease-in-out infinite;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -334,5 +338,17 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes pulseGentle {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 0.9;
   }
 }

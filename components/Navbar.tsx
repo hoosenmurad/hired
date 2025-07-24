@@ -20,11 +20,18 @@ const Navbar = () => {
       <div className="items-center gap-8 max-sm:hidden flex">
         <NavItems />
         <SignedOut>
-          <Link href="/sign-up">
-            <button className="btn-primary max-sm:w-full px-6 py-2 rounded-full font-bold transition-colors">
-              Sign Up
-            </button>
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link href="/sign-in">
+              <button className="btn-secondary px-6 py-2 rounded-full font-bold transition-colors hover:bg-dark-200/60">
+                Sign In
+              </button>
+            </Link>
+            <Link href="/sign-up">
+              <button className="btn-primary px-6 py-2 rounded-full font-bold transition-colors">
+                Sign Up
+              </button>
+            </Link>
+          </div>
         </SignedOut>
         <SignedIn>
           <UserButton />
@@ -57,11 +64,18 @@ const Navbar = () => {
         <div className="absolute top-full left-0 w-full bg-dark-200 shadow-lg flex flex-col items-center gap-6 py-6 animate-fadeIn sm:hidden z-10">
           <NavItems />
           <SignedOut>
-            <Link href="/sign-up" className="w-full flex justify-center">
-              <button className="btn-primary w-11/12 px-6 py-2 rounded-full font-bold transition-colors">
-                Sign Up
-              </button>
-            </Link>
+            <div className="w-full flex flex-col gap-3 items-center">
+              <Link href="/sign-in" className="w-full flex justify-center">
+                <button className="btn-secondary w-11/12 px-6 py-2 rounded-full font-bold transition-colors">
+                  Sign In
+                </button>
+              </Link>
+              <Link href="/sign-up" className="w-full flex justify-center">
+                <button className="btn-primary w-11/12 px-6 py-2 rounded-full font-bold transition-colors">
+                  Sign Up
+                </button>
+              </Link>
+            </div>
           </SignedOut>
           <SignedIn>
             <div className="w-full flex justify-center">
