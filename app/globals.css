@@ -293,6 +293,43 @@
     }
   }
 
+  /* Enhanced Navbar Styling */
+  .navbar-enhanced {
+    @apply sticky top-0 z-50 bg-dark-100/80 backdrop-blur-lg border-b border-gray-800/30;
+  }
+
+  .navbar-scrolled {
+    @apply bg-dark-100/95 border-gray-700/50 shadow-lg shadow-black/20;
+  }
+
+  .nav-btn-primary {
+    @apply px-6 py-2.5 bg-primary-200 text-dark-100 rounded-full font-semibold text-sm 
+           transition-all duration-200 hover:bg-primary-200/90 hover:scale-105 
+           hover:shadow-lg hover:shadow-primary-200/25 active:scale-95 
+           focus:outline-none focus:ring-2 focus:ring-primary-200/50 focus:ring-offset-2 
+           focus:ring-offset-dark-100;
+  }
+
+  .nav-btn-secondary {
+    @apply px-6 py-2.5 bg-dark-200/80 text-primary-100 rounded-full font-semibold text-sm 
+           border border-primary-200/20 transition-all duration-200 
+           hover:bg-dark-200 hover:border-primary-200/40 hover:text-primary-200 
+           hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 
+           focus:ring-primary-200/50 focus:ring-offset-2 focus:ring-offset-dark-100;
+  }
+
+  .mobile-menu-enhanced {
+    @apply fixed top-[88px] right-4 left-4 bg-dark-200/95 backdrop-blur-xl 
+           shadow-2xl shadow-black/40 flex flex-col gap-6 p-6 animate-fadeIn 
+           sm:hidden z-30 rounded-2xl border border-primary-200/20 
+           max-h-[calc(100vh-120px)] overflow-y-auto;
+  }
+
+  .border-gradient-subtle {
+    @apply border-t border-gray-600/30;
+  }
+
+  /* Legacy navbar class for backward compatibility */
   .navbar {
     @apply flex items-center justify-between mx-auto w-full px-14 py-4 bg-transparent max-sm:px-4;
   }
