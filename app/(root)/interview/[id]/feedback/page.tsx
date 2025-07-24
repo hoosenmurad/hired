@@ -27,7 +27,7 @@ const Feedback = async ({ params }: RouteParams) => {
   return (
     <section className="section-feedback">
       <div className="flex flex-row justify-center">
-        <h1 className="text-4xl font-semibold">
+        <h1 className="text-4xl font-semibold text-white text-center">
           Feedback on the Interview -{" "}
           <span className="capitalize">{interview.role}</span> Interview
         </h1>
@@ -38,7 +38,7 @@ const Feedback = async ({ params }: RouteParams) => {
           {/* Overall Impression */}
           <div className="flex flex-row gap-2 items-center">
             <Image src="/star.svg" width={22} height={22} alt="star" />
-            <p>
+            <p className="text-light-100">
               Overall Impression:{" "}
               <span className="text-primary-200 font-bold">
                 {feedback?.totalScore}
@@ -50,7 +50,7 @@ const Feedback = async ({ params }: RouteParams) => {
           {/* Date */}
           <div className="flex flex-row gap-2">
             <Image src="/calendar.svg" width={22} height={22} alt="calendar" />
-            <p>
+            <p className="text-light-100">
               {feedback?.createdAt
                 ? dayjs(feedback.createdAt).format("MMM D, YYYY h:mm A")
                 : "N/A"}
@@ -59,65 +59,105 @@ const Feedback = async ({ params }: RouteParams) => {
         </div>
       </div>
 
-      <hr />
+      <hr className="border-light-600/20" />
 
-      <p>{feedback?.finalAssessment}</p>
+      <div className="bg-[#191b1f] rounded-2xl shadow-lg p-8">
+        <p className="text-light-100 leading-relaxed">
+          {feedback?.finalAssessment}
+        </p>
+      </div>
 
       {/* Per-Question Ratings */}
       {feedback?.questionRatings && feedback.questionRatings.length > 0 && (
-        <div className="flex flex-col gap-4">
-          <h2>Question-by-Question Analysis:</h2>
-          {feedback.questionRatings.map((rating, index) => (
-            <div key={index} className="bg-gray-50 p-4 rounded-lg">
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="font-bold text-lg">Question {index + 1}</h3>
-                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium">
-                  {rating.rating}/100
-                </span>
+        <div className="flex flex-col gap-6">
+          <h2 className="text-white">Question-by-Question Analysis:</h2>
+          <div className="space-y-4">
+            {feedback.questionRatings.map((rating, index) => (
+              <div
+                key={index}
+                className="bg-[#191b1f] rounded-2xl shadow-lg p-6 border border-light-600/10"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="font-bold text-lg text-white">
+                    Question {index + 1}
+                  </h3>
+                  <span className="bg-primary-200 text-dark-100 px-3 py-1 rounded-full text-sm font-semibold">
+                    {rating.rating}/100
+                  </span>
+                </div>
+                <p className="font-medium mb-4 text-white leading-relaxed">
+                  {rating.question}
+                </p>
+                <div className="mb-4 bg-dark-200/50 rounded-lg p-4">
+                  <h4 className="font-medium text-primary-200 mb-2">
+                    Your Response:
+                  </h4>
+                  <p className="text-light-100 italic leading-relaxed">
+                    {rating.response}
+                  </p>
+                </div>
+                <div className="bg-dark-200/50 rounded-lg p-4">
+                  <h4 className="font-medium text-primary-200 mb-2">
+                    Feedback:
+                  </h4>
+                  <p className="text-light-100 leading-relaxed">
+                    {rating.feedback}
+                  </p>
+                </div>
               </div>
-              <p className="font-medium mb-2 text-gray-800">
-                {rating.question}
-              </p>
-              <div className="mb-2">
-                <h4 className="font-medium text-gray-700">Your Response:</h4>
-                <p className="text-gray-600 italic">{rating.response}</p>
-              </div>
-              <div>
-                <h4 className="font-medium text-gray-700">Feedback:</h4>
-                <p className="text-gray-600">{rating.feedback}</p>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
 
       {/* Interview Breakdown */}
-      <div className="flex flex-col gap-4">
-        <h2>Overall Performance Breakdown:</h2>
-        {feedback?.categoryScores?.map((category, index) => (
-          <div key={index}>
-            <p className="font-bold">
-              {index + 1}. {category.name} ({category.score}/100)
-            </p>
-            <p>{category.comment}</p>
-          </div>
-        ))}
+      <div className="bg-[#191b1f] rounded-2xl shadow-lg p-8">
+        <h2 className="text-white mb-6">Overall Performance Breakdown:</h2>
+        <div className="space-y-4">
+          {feedback?.categoryScores?.map((category, index) => (
+            <div key={index} className="bg-dark-200/50 rounded-lg p-4">
+              <div className="flex justify-between items-center mb-2">
+                <p className="font-bold text-white">
+                  {index + 1}. {category.name}
+                </p>
+                <span className="bg-primary-200 text-dark-100 px-3 py-1 rounded-full text-sm font-semibold">
+                  {category.score}/100
+                </span>
+              </div>
+              <p className="text-light-100 leading-relaxed">
+                {category.comment}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
 
-      <div className="flex flex-col gap-3">
-        <h3>Strengths</h3>
-        <ul>
+      <div className="bg-[#191b1f] rounded-2xl shadow-lg p-8">
+        <h3 className="text-white mb-4">Strengths</h3>
+        <ul className="space-y-2">
           {feedback?.strengths?.map((strength, index) => (
-            <li key={index}>{strength}</li>
+            <li
+              key={index}
+              className="text-light-100 leading-relaxed flex items-start"
+            >
+              <span className="text-primary-200 mr-2 mt-1">•</span>
+              {strength}
+            </li>
           ))}
         </ul>
       </div>
 
-      <div className="flex flex-col gap-3">
-        <h3>Areas for Improvement</h3>
-        <ul>
+      <div className="bg-[#191b1f] rounded-2xl shadow-lg p-8">
+        <h3 className="text-white mb-4">Areas for Improvement</h3>
+        <ul className="space-y-2">
           {feedback?.areasForImprovement?.map((area, index) => (
-            <li key={index}>{area}</li>
+            <li
+              key={index}
+              className="text-light-100 leading-relaxed flex items-start"
+            >
+              <span className="text-primary-200 mr-2 mt-1">•</span>
+              {area}
+            </li>
           ))}
         </ul>
       </div>
