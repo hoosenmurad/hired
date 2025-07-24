@@ -232,7 +232,7 @@ const CreateForm = () => {
               <div className="flex items-center space-x-2">
                 <Sparkles className="h-5 w-5 text-primary-200" />
                 <h3 className="text-lg font-semibold">
-                  Personalize Your Interview
+                  Personalize Your Interview (Recommended)
                 </h3>
               </div>
               <p className="text-[#8e96ac] text-sm">
@@ -241,14 +241,41 @@ const CreateForm = () => {
               </p>
 
               <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="use-personalization"
-                  checked={usePersonalization}
-                  onChange={(e) => setUsePersonalization(e.target.checked)}
-                  className="rounded border-gray-300"
-                />
-                <Label htmlFor="use-personalization" className="text-white">
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    id="use-personalization"
+                    checked={usePersonalization}
+                    onChange={(e) => setUsePersonalization(e.target.checked)}
+                    className="sr-only"
+                  />
+                  <label
+                    htmlFor="use-personalization"
+                    className={`flex items-center justify-center w-5 h-5 rounded border-2 cursor-pointer transition-all ${
+                      usePersonalization
+                        ? "bg-[#cac5fe] border-[#cac5fe]"
+                        : "bg-transparent border-gray-600 hover:border-gray-500"
+                    }`}
+                  >
+                    {usePersonalization && (
+                      <svg
+                        className="w-3 h-3 text-black"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    )}
+                  </label>
+                </div>
+                <Label
+                  htmlFor="use-personalization"
+                  className="text-white cursor-pointer"
+                >
                   Use personalized interview questions
                 </Label>
               </div>

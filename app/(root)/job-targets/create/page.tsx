@@ -42,7 +42,7 @@ const CreateJobTargetPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto py-8">
-        <div className="mb-8 text-center"></div>
+        <div className="mb-1 text-center"></div>
 
         <JobTargetForm onSubmit={handleSubmit} loading={loading} />
       </div>
