@@ -45,46 +45,29 @@ export async function POST(request: NextRequest) {
 
     console.log("File received:", file.name, file.type, file.size);
 
-    // Validate file size (max 5MB for text files)
-    if (file.size > 5 * 1024 * 1024) {
+    // Validate file size (max 10MB for PDF/text files)
+    if (file.size > 10 * 1024 * 1024) {
       return NextResponse.json(
         {
           success: false,
-          error: "File size too large. Please upload a file smaller than 5MB.",
+          error: "File size too large. Please upload a file smaller than 10MB.",
         },
         { status: 400 }
       );
     }
 
-    // Convert file to buffer
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    // Validate file type
+    const isTextFile = file.type.includes("text") || file.name.endsWith(".txt");
+    const isPdfFile =
+      file.type === "application/pdf" || file.name.endsWith(".pdf");
 
-    let extractedText = "";
-
-    // Only handle text files for now
-    if (file.type.includes("text") || file.name.endsWith(".txt")) {
-      console.log("Processing text file");
-      extractedText = buffer.toString("utf-8");
-    } else {
+    if (!isTextFile && !isPdfFile) {
       console.log("Unsupported file type:", file.type);
       return NextResponse.json(
         {
           success: false,
           error:
-            "Currently only text files (.txt) are supported. PDF support will be added soon.",
-        },
-        { status: 400 }
-      );
-    }
-
-    // Validate extracted text
-    if (!extractedText || extractedText.trim().length < 50) {
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            "The file appears to be empty or too short to parse. Please upload a proper CV with at least 50 characters.",
+            "Unsupported file type. Please upload a text file (.txt) or PDF file (.pdf).",
         },
         { status: 400 }
       );
@@ -92,37 +75,165 @@ export async function POST(request: NextRequest) {
 
     console.log("Starting AI parsing with Gemini");
 
-    // Parse CV using Gemini
-    const { object } = await generateObject({
-      model: google("gemini-2.0-flash-001"),
-      schema: parsedCVSchema,
-      prompt: `
-        Parse the following CV/Resume and extract structured information:
+    let result;
 
-        CV Text:
-        ${extractedText.substring(0, 10000)} ${
-        extractedText.length > 10000 ? "...(truncated)" : ""
+    if (isPdfFile) {
+      // Handle PDF files using Gemini's native PDF processing
+      console.log("Processing PDF file with Gemini");
+
+      // Convert file to base64 for Gemini
+      const arrayBuffer = await file.arrayBuffer();
+      const base64Data = Buffer.from(arrayBuffer).toString("base64");
+
+      result = await generateObject({
+        model: google("gemini-2.0-flash-001"),
+        schema: parsedCVSchema,
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: `Parse this CV/Resume PDF and extract structured information. Return only valid JSON with clean, concise text.
+
+IMPORTANT: 
+- Keep summary to 2-3 sentences maximum
+- Remove all excessive whitespace and newlines
+- Use clean, professional language
+- Do not include repeated characters or formatting artifacts
+
+Extract:
+1. Full name (string)
+2. Professional summary (2-3 sentences only, clean text)
+3. Skills (array of individual skills)
+4. Education (array with degree, institution, year)
+5. Work experience (array with title, company, duration, brief description)
+
+Return clean JSON only. If information is missing, omit the field.`,
+              },
+              {
+                type: "file",
+                data: base64Data,
+                mimeType: "application/pdf",
+              },
+            ],
+          },
+        ],
+      });
+
+      // Clean the result data to remove excessive whitespace
+      if (result.object) {
+        if (result.object.summary) {
+          result.object.summary = result.object.summary
+            .replace(/\n+/g, " ")
+            .replace(/\s+/g, " ")
+            .trim()
+            .substring(0, 500); // Limit summary length
+        }
+
+        if (result.object.experience) {
+          result.object.experience = result.object.experience.map((exp) => ({
+            ...exp,
+            description:
+              exp.description
+                ?.replace(/\n+/g, " ")
+                ?.replace(/\s+/g, " ")
+                ?.trim()
+                ?.substring(0, 300) || "", // Limit description length
+          }));
+        }
+      }
+    } else {
+      // Handle text files
+      console.log("Processing text file");
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      const extractedText = buffer.toString("utf-8");
+
+      // Validate extracted text
+      if (!extractedText || extractedText.trim().length < 50) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "The file appears to be empty or too short to parse. Please upload a proper CV with at least 50 characters.",
+          },
+          { status: 400 }
+        );
       }
 
-        Please extract:
-        1. Full name
-        2. Professional summary (2-3 sentences about their background)
-        3. Skills (technical and soft skills as an array)
-        4. Education (degree, institution, year - if multiple, include all)
-        5. Work experience (job title, company, duration, brief description - if multiple, include all)
+      result = await generateObject({
+        model: google("gemini-2.0-flash-001"),
+        schema: parsedCVSchema,
+        prompt: `
+          Parse the following CV/Resume and extract structured information:
 
-        If any information is not available or unclear, omit that field rather than guessing.
-        For skills, extract both technical skills (like programming languages, tools) and relevant soft skills.
-        For experience duration, format as "Month Year - Month Year" or "Month Year - Present".
-      `,
-    });
+          CV Text:
+          ${extractedText.substring(0, 10000)} ${
+          extractedText.length > 10000 ? "...(truncated)" : ""
+        }
+
+          Please extract:
+          1. Full name
+          2. Professional summary (2-3 sentences about their background)
+          3. Skills (technical and soft skills as an array)
+          4. Education (degree, institution, year - if multiple, include all)
+          5. Work experience (job title, company, duration, brief description - if multiple, include all)
+
+          If any information is not available or unclear, omit that field rather than guessing.
+          For skills, extract both technical skills (like programming languages, tools) and relevant soft skills.
+          For experience duration, format as "Month Year - Month Year" or "Month Year - Present".
+        `,
+      });
+    }
 
     console.log("AI parsing completed successfully");
 
-    return NextResponse.json({
-      success: true,
-      data: object,
-    });
+    // Additional safety check and cleaning
+    if (result.object) {
+      console.log(
+        "Raw result object:",
+        JSON.stringify(result.object, null, 2).substring(0, 500) + "..."
+      );
+
+      // Clean all string fields recursively
+      const cleanObject = (obj: unknown): unknown => {
+        if (typeof obj === "string") {
+          return obj.replace(/\n+/g, " ").replace(/\s+/g, " ").trim();
+        }
+        if (Array.isArray(obj)) {
+          return obj.map(cleanObject);
+        }
+        if (obj && typeof obj === "object") {
+          const cleaned: Record<string, unknown> = {};
+          for (const [key, value] of Object.entries(obj)) {
+            cleaned[key] = cleanObject(value);
+          }
+          return cleaned;
+        }
+        return obj;
+      };
+
+      const cleanedResult = cleanObject(result.object);
+      console.log(
+        "Cleaned result:",
+        JSON.stringify(cleanedResult, null, 2).substring(0, 500) + "..."
+      );
+
+      return NextResponse.json({
+        success: true,
+        data: cleanedResult,
+      });
+    } else {
+      console.log("No object in result");
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Failed to extract structured data from CV",
+        },
+        { status: 400 }
+      );
+    }
   } catch (error) {
     console.error("Error parsing CV:", error);
 
@@ -145,6 +256,16 @@ export async function POST(request: NextRequest) {
               "AI service temporarily unavailable. Please try again later.",
           },
           { status: 503 }
+        );
+      }
+      if (error.message.includes("file") || error.message.includes("PDF")) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "Failed to process the uploaded file. Please ensure it's a valid PDF or text file.",
+          },
+          { status: 400 }
         );
       }
     }

@@ -170,6 +170,7 @@ const ProfileForm = ({
     onDrop,
     accept: {
       "text/plain": [".txt"],
+      "application/pdf": [".pdf"],
     },
     maxFiles: 1,
   });
@@ -213,15 +214,15 @@ const ProfileForm = ({
             Create Your Profile
           </h1>
           <p className="text-light-100 mt-2">
-            Upload your CV (text file) for automatic parsing or fill out
-            manually. PDF support coming soon!
+            Upload your CV (PDF or text file) for automatic parsing or fill out
+            manually.
           </p>
         </div>
 
         {/* CV Upload Section */}
-        <div className="bg-[#191b1f] rounded-2xl shadow-lg p-8">
-          <h2 className="text-2xl font-semibold mb-6 text-white">
-            Upload CV (Optional)
+        <div className="bg-[#191b1f] rounded-2xl shadow-lg p-8 space-y-6">
+          <h2 className="text-2xl font-semibold text-white">
+            Import CV/Resume
           </h2>
           <div
             {...getRootProps()}
@@ -246,7 +247,7 @@ const ProfileForm = ({
                     : "Drag & drop your CV here, or click to select"}
                 </p>
                 <p className="text-sm text-light-100">
-                  Supports text files (.txt only). PDF support coming soon!
+                  Supports PDF (.pdf) and text files (.txt). Maximum 10MB.
                 </p>
               </div>
             )}
