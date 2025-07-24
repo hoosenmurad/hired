@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import Image from "next/image";
 import {
   CheckCircle,
   Brain,
@@ -70,7 +69,7 @@ export default function LandingPage() {
                 asChild
                 className="btn-secondary px-6 py-3 rounded-full font-bold transition-colors"
               >
-                <Link href="/create">Quick Demo</Link>
+                <Link href="/create">Create interview</Link>
               </Button>
             </div>
 
@@ -239,17 +238,10 @@ export default function LandingPage() {
 
                 <div className="relative z-10">
                   {/* Step Number */}
-                  <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-r from-dark-200 to-dark-300 border-2 border-primary-200/30 mb-6 group-hover:border-primary-200 transition-colors">
+                  <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-r from-dark-200 to-dark-300 border-2 border-primary-200/30 mb-10 group-hover:border-primary-200 transition-colors">
                     <span className="text-2xl font-bold text-primary-200">
                       {step.step}
                     </span>
-                  </div>
-
-                  {/* Icon */}
-                  <div
-                    className={`inline-flex items-center justify-center w-12 h-12 rounded-xl bg-${step.color}/20 mb-6`}
-                  >
-                    <step.icon className={`w-6 h-6 text-${step.color}`} />
                   </div>
 
                   <h3 className="text-2xl font-semibold mb-4">{step.title}</h3>
@@ -282,7 +274,7 @@ export default function LandingPage() {
       {/* Benefits Section */}
       <section className="py-24 relative">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <div className="max-w-4xl">
             {/* Content */}
             <div className="space-y-8">
               <div className="space-y-6">
@@ -352,27 +344,6 @@ export default function LandingPage() {
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
-            </div>
-
-            {/* Visual */}
-            <div className="relative">
-              <div className="relative w-full aspect-square max-w-lg mx-auto">
-                {/* Background Elements */}
-                <div className="absolute inset-0 bg-gradient-to-br from-primary-200/20 to-primary-100/10 rounded-3xl"></div>
-                <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-primary-200/30 rounded-full blur-2xl"></div>
-                <div className="absolute bottom-1/4 right-1/4 w-24 h-24 bg-success-100/30 rounded-full blur-xl"></div>
-
-                {/* Main Image */}
-                <div className="relative z-10 p-8">
-                  <Image
-                    src="/robot.png"
-                    alt="AI Interview Assistant"
-                    width={400}
-                    height={400}
-                    className="w-full h-auto drop-shadow-2xl"
-                  />
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -460,6 +431,133 @@ export default function LandingPage() {
                 className="flex items-center gap-2"
               >
                 Join Our Success Stories
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section className="py-24 relative">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              Choose Your <span className="text-primary-200">Plan</span>
+            </h2>
+            <p className="text-xl text-light-100 max-w-2xl mx-auto">
+              Invest in your career with professional AI interview training
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {[
+              {
+                name: "Hustle",
+                price: "$27",
+                period: "Month",
+                description:
+                  "Have an interview tomorrow and don't know what to do? This plan is for you.",
+                features: [
+                  "5 Custom Interviews",
+                  "30 Minutes Interview Time",
+                  "Detailed feedback",
+                ],
+                popular: false,
+                buttonText: "Get Hustle",
+              },
+              {
+                name: "Prepped",
+                price: "$45",
+                period: "Month",
+                description:
+                  "You have a few weeks to prep and get your interview game up to scratch, choose this plan.",
+                features: [
+                  "10 Custom Interviews",
+                  "60 Minutes of Interview Time",
+                  "Detailed feedback",
+                ],
+                popular: true,
+                buttonText: "Get Prepped",
+              },
+              {
+                name: "Hired",
+                price: "$72",
+                period: "Month",
+                description:
+                  "You are obsessed with perfection and fear rejection more than anything, choose hired.",
+                features: [
+                  "20 Custom Interviews",
+                  "100 Minutes of Interview Time",
+                  "Detailed feedback",
+                ],
+                popular: false,
+                buttonText: "Get Hired",
+              },
+            ].map((plan, index) => (
+              <div
+                key={index}
+                className={`card-interview group hover:scale-105 transition-all duration-300 relative ${
+                  plan.popular ? "ring-2 ring-primary-200/50" : ""
+                }`}
+              >
+                <div className="text-center mb-6">
+                  {plan.popular && (
+                    <div className="mb-4">
+                      <div className="bg-primary-200 text-dark-100 px-4 py-1 rounded-full text-sm font-bold inline-block">
+                        Most Popular
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <h3 className="text-2xl font-bold text-white">
+                      {plan.name}
+                    </h3>
+                  </div>
+                  <div className="flex items-baseline justify-center gap-1">
+                    <span className="text-4xl font-bold text-primary-200">
+                      {plan.price}
+                    </span>
+                    <span className="text-light-100">/{plan.period}</span>
+                  </div>
+                  <p className="text-light-100 mt-4 text-sm leading-relaxed">
+                    {plan.description}
+                  </p>
+                </div>
+
+                <div className="space-y-4 mb-8">
+                  {plan.features.map((feature, featureIndex) => (
+                    <div key={featureIndex} className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-primary-200 flex-shrink-0 mt-0.5" />
+                      <span className="text-light-100">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <Button
+                  asChild
+                  className={`w-full px-6 py-3 rounded-full font-bold transition-colors ${
+                    plan.popular ? "btn-primary" : "btn-secondary"
+                  }`}
+                >
+                  <Link href="/onboarding/profile">{plan.buttonText}</Link>
+                </Button>
+              </div>
+            ))}
+          </div>
+
+          {/* Pricing CTA */}
+          <div className="text-center mt-16">
+            <Button
+              asChild
+              className="btn-primary px-8 py-3 rounded-full font-bold transition-colors group"
+            >
+              <Link
+                href="/onboarding/profile"
+                className="flex items-center gap-2"
+              >
+                Start Your Training Today
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
             </Button>
