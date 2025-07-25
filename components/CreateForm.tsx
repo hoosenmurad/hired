@@ -550,7 +550,7 @@ const CreateForm = () => {
                     <div className="flex items-center space-x-2">
                       <Sparkles className="h-5 w-5 text-primary-200" />
                       <h4 className="font-semibold text-white">
-                        Personalized Interview Settings
+                        Interview Settings
                       </h4>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
@@ -592,8 +592,7 @@ const CreateForm = () => {
                       </div>
                     </div>
                     <p className="text-xs text-primary-200">
-                      ✨ Questions will be tailored to your background and
-                      target role
+                      ✨ Review your settings
                     </p>
                   </div>
                 )}
@@ -605,7 +604,8 @@ const CreateForm = () => {
                 render={({ field }) => (
                   <div className="space-y-2">
                     <Label htmlFor="duration">
-                      How many questions would you like?
+                      How many questions would you like? (Estimated 2 minutes
+                      per question)
                     </Label>
                     <Select
                       onValueChange={(val) => field.onChange(Number(val))}
