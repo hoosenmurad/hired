@@ -27,7 +27,7 @@ const JobTargetCreationPage = () => {
 
       if (result.success) {
         toast.success("Job target created successfully!");
-        router.push("/onboarding/setup-interview");
+        router.push("/pricing?onboarding=true");
       } else {
         toast.error(result.error || "Failed to create job target");
       }
@@ -52,9 +52,13 @@ const JobTargetCreationPage = () => {
               <div className="w-8 h-8 bg-primary-200 text-dark-100 rounded-full flex items-center justify-center text-sm font-semibold">
                 2
               </div>
-              <div className="w-16 h-1 bg-primary-200"></div>
+              <div className="w-16 h-1 bg-light-600"></div>
               <div className="w-8 h-8 bg-light-600 text-light-100 rounded-full flex items-center justify-center text-sm font-semibold">
                 3
+              </div>
+              <div className="w-16 h-1 bg-light-600"></div>
+              <div className="w-8 h-8 bg-light-600 text-light-100 rounded-full flex items-center justify-center text-sm font-semibold">
+                4
               </div>
             </div>
           </div>

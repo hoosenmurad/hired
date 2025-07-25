@@ -203,13 +203,13 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
               {
                 step: "01",
                 title: "Create Your Profile",
                 description:
-                  "Upload your CV or manually input your experience, skills, and career goals. Our AI analyzes your background to create personalized interviews.",
+                  "Upload your CV or input your experience and skills. Our AI analyzes your background.",
                 icon: Upload,
                 color: "primary-200",
               },
@@ -217,23 +217,31 @@ export default function LandingPage() {
                 step: "02",
                 title: "Add Job Targets",
                 description:
-                  "Upload job descriptions or manually add target roles. Our system creates tailored questions based on specific requirements.",
+                  "Upload job descriptions or add target roles for tailored interview questions.",
                 icon: Target,
                 color: "success-100",
               },
               {
                 step: "03",
-                title: "Practice & Improve",
+                title: "Buy Credits",
                 description:
-                  "Engage in realistic voice interviews with our AI. Get detailed feedback and improve your performance with each session.",
-                icon: TrendingUp,
+                  "Choose a plan and get interview minutes added to your account to start practicing.",
+                icon: Award,
                 color: "purple-400",
+              },
+              {
+                step: "04",
+                title: "Initiate Interviews",
+                description:
+                  "Configure settings and start practicing with detailed AI feedback.",
+                icon: TrendingUp,
+                color: "blue-400",
               },
             ].map((step, index) => (
               <div key={index} className="relative text-center group">
                 {/* Connection Line */}
-                {index < 2 && (
-                  <div className="hidden md:block absolute top-16 left-full w-full h-0.5 bg-gradient-to-r from-gray-600 to-transparent -translate-x-1/2 z-0"></div>
+                {index < 3 && (
+                  <div className="hidden lg:block absolute top-16 left-full w-full h-0.5 bg-gradient-to-r from-gray-600 to-transparent -translate-x-1/2 z-0"></div>
                 )}
 
                 <div className="relative z-10">
@@ -595,7 +603,7 @@ export default function LandingPage() {
                 asChild
                 className="btn-secondary px-6 py-3 rounded-full font-bold transition-colors"
               >
-                <Link href="/create">Try Demo Interview</Link>
+                <Link href="/create">Create Interview Now</Link>
               </Button>
             </div>
 

@@ -56,6 +56,10 @@ const ProfileCreationPage = () => {
               <div className="w-8 h-8 bg-light-600 text-light-100 rounded-full flex items-center justify-center text-sm font-semibold">
                 3
               </div>
+              <div className="w-16 h-1 bg-light-600"></div>
+              <div className="w-8 h-8 bg-light-600 text-light-100 rounded-full flex items-center justify-center text-sm font-semibold">
+                4
+              </div>
             </div>
           </div>
           <h1 className="text-3xl font-bold text-white">Welcome to HiredAI</h1>

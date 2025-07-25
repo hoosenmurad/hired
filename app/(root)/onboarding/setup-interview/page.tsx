@@ -153,17 +153,21 @@ const InterviewSetupPage = () => {
               <div className="w-8 h-8 bg-success-100 text-dark-100 rounded-full flex items-center justify-center text-sm font-semibold">
                 ✓
               </div>
+              <div className="w-16 h-1 bg-success-100"></div>
+              <div className="w-8 h-8 bg-success-100 text-dark-100 rounded-full flex items-center justify-center text-sm font-semibold">
+                ✓
+              </div>
               <div className="w-16 h-1 bg-primary-200"></div>
               <div className="w-8 h-8 bg-primary-200 text-dark-100 rounded-full flex items-center justify-center text-sm font-semibold">
-                3
+                4
               </div>
             </div>
           </div>
           <h1 className="text-3xl font-bold text-white">
-            Setup Your Interview
+            Initiate Your First Interview
           </h1>
           <p className="text-light-100 mt-2">
-            Choose your interview parameters
+            Configure your interview settings and start practicing
           </p>
         </div>
 

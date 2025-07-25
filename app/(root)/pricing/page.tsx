@@ -1,19 +1,56 @@
 "use client";
 
 import { PricingTable } from "@clerk/nextjs";
+import { useSearchParams } from "next/navigation";
 
 const Pricing = () => {
+  const searchParams = useSearchParams();
+  const isOnboarding = searchParams.get("onboarding") === "true";
+
   return (
     <div className="min-h-screen pattern">
+      {/* Onboarding Progress Header */}
+      {isOnboarding && (
+        <div className="container mx-auto py-8">
+          <div className="mb-8 text-center">
+            <div className="flex justify-center mb-4">
+              <div className="flex items-center space-x-4">
+                <div className="w-8 h-8 bg-success-100 text-dark-100 rounded-full flex items-center justify-center text-sm font-semibold">
+                  ✓
+                </div>
+                <div className="w-16 h-1 bg-success-100"></div>
+                <div className="w-8 h-8 bg-success-100 text-dark-100 rounded-full flex items-center justify-center text-sm font-semibold">
+                  ✓
+                </div>
+                <div className="w-16 h-1 bg-primary-200"></div>
+                <div className="w-8 h-8 bg-primary-200 text-dark-100 rounded-full flex items-center justify-center text-sm font-semibold">
+                  3
+                </div>
+                <div className="w-16 h-1 bg-light-600"></div>
+                <div className="w-8 h-8 bg-light-600 text-light-100 rounded-full flex items-center justify-center text-sm font-semibold">
+                  4
+                </div>
+              </div>
+            </div>
+            <h1 className="text-3xl font-bold text-white">Choose Your Plan</h1>
+            <p className="text-light-100 mt-2">
+              Select a plan to start your interview practice
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
-      <div className="pt-24 pb-12 text-center">
-        <h1 className="text-5xl font-bold bg-gradient-to-r from-white via-primary-100 to-primary-200 bg-clip-text text-transparent mb-4">
-          Choose Your <span className="text-primary-200">Plan</span>
-        </h1>
-        <p className="text-xl text-light-100 max-w-2xl mx-auto">
-          Invest in your career with professional AI interview training
-        </p>
-      </div>
+      {!isOnboarding && (
+        <div className="pt-24 pb-12 text-center">
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-white via-primary-100 to-primary-200 bg-clip-text text-transparent mb-4">
+            Choose Your <span className="text-primary-200">Plan</span>
+          </h1>
+          <p className="text-xl text-light-100 max-w-2xl mx-auto">
+            Invest in your career with professional AI interview training
+          </p>
+        </div>
+      )}
 
       {/* Clerk Pricing Table */}
       <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 1rem" }}>
