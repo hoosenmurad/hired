@@ -541,7 +541,7 @@ export default function LandingPage() {
                     plan.popular ? "btn-primary" : "btn-secondary"
                   }`}
                 >
-                  <Link href="/onboarding/profile">{plan.buttonText}</Link>
+                  <Link href="/pricing">{plan.buttonText}</Link>
                 </Button>
               </div>
             ))}
@@ -553,11 +553,8 @@ export default function LandingPage() {
               asChild
               className="btn-primary px-8 py-3 rounded-full font-bold transition-colors group"
             >
-              <Link
-                href="/onboarding/profile"
-                className="flex items-center gap-2"
-              >
-                Start Your Training Today
+              <Link href="/pricing" className="flex items-center gap-2">
+                View All Plans
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
             </Button>
