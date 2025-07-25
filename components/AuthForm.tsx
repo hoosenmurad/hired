@@ -22,7 +22,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
         if (type === "sign-up") {
           router.push("/onboarding/profile");
         } else {
-          router.push("/");
+          router.push("/dashboard");
         }
       }, 500);
     }
