@@ -1,7 +1,5 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { isAuthenticated } from "@/lib/actions/auth.action";
 import {
   CheckCircle,
   Brain,
@@ -19,13 +17,7 @@ import {
   Award,
 } from "lucide-react";
 
-export default async function LandingPage() {
-  // Redirect authenticated users to dashboard
-  const isUserAuthenticated = await isAuthenticated();
-  if (isUserAuthenticated) {
-    redirect("/dashboard");
-  }
-
+export default function LandingPage() {
   return (
     <main className="relative min-h-screen pattern">
       {/* Hero Section */}
