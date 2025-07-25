@@ -32,6 +32,10 @@ interface Interview {
   profileId?: string;
   jobTargetId?: string;
   isPersonalized?: boolean;
+  // Time tracking fields
+  startTime?: string;
+  endTime?: string;
+  duration?: number; // in minutes
 }
 
 interface Profile {
@@ -82,16 +86,17 @@ interface User {
 }
 
 interface InterviewCardProps {
-  interviewId?: string;
-  userId?: string;
+  interviewId: string;
+  userId: string;
   role: string;
   type: string;
   specialtySkills: string[];
-  createdAt?: string;
+  createdAt: string;
   isPersonalized?: boolean;
   profileName?: string;
   jobTargetTitle?: string;
   jobTargetCompany?: string;
+  duration?: number;
 }
 
 interface AgentProps {

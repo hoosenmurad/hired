@@ -129,6 +129,7 @@ const Agent = ({
           variableValues: {
             username: userName,
             userid: userId,
+            interviewId: interviewId,
           },
         });
       } else {
@@ -149,6 +150,8 @@ const Agent = ({
         await vapi.start(interviewer, {
           variableValues: {
             questions: formattedQuestions,
+            userid: userId,
+            interviewId: interviewId,
           },
           maxDurationSeconds:
             questions && questions.length > 0

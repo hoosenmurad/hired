@@ -7,7 +7,7 @@ import DisplayTechIcons from "./DisplayTechIcons";
 
 import { cn, getRandomInterviewCover } from "@/lib/utils";
 import { getFeedbackByInterviewId } from "@/lib/actions/general.action";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Clock } from "lucide-react";
 
 const InterviewCard = async ({
   interviewId,
@@ -20,6 +20,7 @@ const InterviewCard = async ({
   profileName,
   jobTargetTitle,
   jobTargetCompany,
+  duration,
 }: InterviewCardProps) => {
   const feedback =
     userId && interviewId
@@ -84,7 +85,7 @@ const InterviewCard = async ({
             )}
           </h3>
 
-          {/* Date & Score */}
+          {/* Date, Score & Duration */}
           <div className="flex flex-row gap-5 mt-3">
             <div className="flex flex-row gap-2">
               <Image
@@ -100,6 +101,14 @@ const InterviewCard = async ({
               <Image src="/star.svg" width={22} height={22} alt="star" />
               <p>{feedback?.totalScore || "---"}/100</p>
             </div>
+
+            {/* Show duration if interview was completed */}
+            {duration && (
+              <div className="flex flex-row gap-2 items-center">
+                <Clock className="w-[22px] h-[22px] text-primary-200" />
+                <p>{duration}m</p>
+              </div>
+            )}
           </div>
 
           {/* Feedback or Placeholder Text with optional personalization hint */}

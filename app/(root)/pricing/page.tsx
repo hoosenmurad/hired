@@ -20,13 +20,13 @@ const Pricing = () => {
         <PricingTable
           appearance={{
             variables: {
-              colorBackground: "transparent",
-              colorText: "#ffffff",
-              colorTextSecondary: "#f0f4ff",
-              colorPrimary: "#cac5fe",
-              colorSuccess: "#cac5fe",
-              colorDanger: "#ef4444",
-              borderRadius: "16px",
+              colorBackground: "#1a1527", // deep dark purple background
+              colorText: "#ffffff", // main text white
+              colorTextSecondary: "#d6c5e0", // light lavender secondary text
+              colorPrimary: "#8b5cf6", // vibrant purple for primary
+              colorSuccess: "#7c3aed", // purple success tone
+              colorDanger: "#a855f7", // lighter purple-red
+              borderRadius: "8px",
               spacingUnit: "1rem",
             },
             elements: {
@@ -34,40 +34,40 @@ const Pricing = () => {
 
               // Billing toggle
               toggleGroup:
-                "bg-dark-200/80 border border-primary-200/30 rounded-xl p-2",
+                "bg-black/50 border border-purple-700/40 rounded-lg p-1.5",
               toggleGroupItem:
-                "text-white bg-white/10 border border-white/20 hover:bg-white/20 hover:border-primary-200/40",
+                "text-white bg-transparent border border-transparent hover:bg-purple-900/40 hover:border-purple-600/40 px-4 py-2 rounded-md font-medium transition-all",
               toggleGroupItemActive:
-                "bg-primary-200 text-dark-100 border-primary-200",
+                "bg-purple-600 text-white border-purple-500 shadow-sm",
 
               // Cards
-              card: "bg-gradient-to-br from-dark-200 to-dark-300 border border-white/10 rounded-2xl p-8 hover:scale-[1.02] hover:border-primary-200/30 transition-all",
+              card: "bg-gradient-to-br from-purple-900/90 to-black/90 border border-purple-700/40 rounded-xl p-6 hover:scale-[1.01] hover:border-purple-400/50 transition-all hover:shadow-lg hover:shadow-purple-500/20",
               cardPopular:
-                "border-2 border-primary-200/50 ring-1 ring-primary-200/20",
+                "border-2 border-purple-400 ring-2 ring-purple-300/30 shadow-lg shadow-purple-500/25",
 
               // Card content
               cardHeader: "text-center mb-6",
               cardTitle: "text-white text-2xl font-bold mb-2",
-              cardDescription: "text-light-100 text-sm mb-4",
+              cardDescription: "text-purple-200 text-sm mb-4",
               cardPrice: "text-center mb-6",
-              cardPriceText: "text-4xl font-bold text-primary-200",
-              cardPriceSubtext: "text-light-100 text-base",
+              cardPriceText: "text-4xl font-bold text-purple-300",
+              cardPriceSubtext: "text-purple-200 text-base",
 
               // Features
               cardFeatures: "space-y-3 mb-8",
-              cardFeature: "flex items-center gap-3 text-light-100",
-              cardFeatureIcon: "text-primary-200 flex-shrink-0",
+              cardFeature: "flex items-center gap-3 text-purple-100",
+              cardFeatureIcon: "text-purple-300 flex-shrink-0",
 
               // CTA Button
               cardCta: "w-full",
               cardCtaButton:
-                "w-full px-6 py-3 rounded-full font-bold transition-colors bg-primary-200 text-dark-100 hover:bg-primary-100",
+                "w-full px-6 py-3 rounded-lg font-semibold transition-all bg-purple-600 text-white hover:bg-purple-700 hover:shadow-md hover:shadow-purple-500/20 active:scale-[0.98]",
               cardCtaButtonPopular:
-                "w-full px-6 py-3 rounded-full font-bold transition-colors bg-primary-200 text-dark-100 hover:bg-primary-100",
+                "w-full px-6 py-3 rounded-lg font-semibold transition-all bg-gradient-to-r from-purple-600 to-purple-700 text-white hover:from-purple-700 hover:to-purple-800 hover:shadow-md hover:shadow-purple-500/20 active:scale-[0.98]",
 
               // Footer
               cardFooter: "text-center mt-6",
-              cardFooterText: "text-light-100 text-sm",
+              cardFooterText: "text-purple-300 text-sm",
             },
           }}
         />

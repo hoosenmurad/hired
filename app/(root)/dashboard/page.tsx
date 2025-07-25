@@ -28,24 +28,36 @@ async function Dashboard() {
 
   // Helper function to enrich interview data with personalization info
   const enrichInterviewData = async (interviews: Interview[]) => {
-    const profileIds = [...new Set(interviews.map(i => i.profileId).filter(Boolean))];
-    const jobTargetIds = [...new Set(interviews.map(i => i.jobTargetId).filter(Boolean))];
+    const profileIds = [
+      ...new Set(interviews.map((i) => i.profileId).filter(Boolean)),
+    ];
+    const jobTargetIds = [
+      ...new Set(interviews.map((i) => i.jobTargetId).filter(Boolean)),
+    ];
 
     const [profilesData, jobTargetsData] = await Promise.all([
-      profileIds.length > 0 
-        ? Promise.all(profileIds.map(id => getProfileById(id!)))
+      profileIds.length > 0
+        ? Promise.all(profileIds.map((id) => getProfileById(id!)))
         : Promise.resolve([]),
       jobTargetIds.length > 0
-        ? Promise.all(jobTargetIds.map(id => getJobTargetById(id!)))
-        : Promise.resolve([])
+        ? Promise.all(jobTargetIds.map((id) => getJobTargetById(id!)))
+        : Promise.resolve([]),
     ]);
 
-    const profilesMap = new Map(profilesData.filter(Boolean).map(p => [p!.id, p]));
-    const jobTargetsMap = new Map(jobTargetsData.filter(Boolean).map(jt => [jt!.id, jt]));
+    const profilesMap = new Map(
+      profilesData.filter(Boolean).map((p) => [p!.id, p])
+    );
+    const jobTargetsMap = new Map(
+      jobTargetsData.filter(Boolean).map((jt) => [jt!.id, jt])
+    );
 
     return interviews.map((interview) => {
-      const profile = interview.profileId ? profilesMap.get(interview.profileId) : undefined;
-      const jobTarget = interview.jobTargetId ? jobTargetsMap.get(interview.jobTargetId) : undefined;
+      const profile = interview.profileId
+        ? profilesMap.get(interview.profileId)
+        : undefined;
+      const jobTarget = interview.jobTargetId
+        ? jobTargetsMap.get(interview.jobTargetId)
+        : undefined;
 
       return {
         ...interview,
@@ -68,7 +80,7 @@ async function Dashboard() {
   return (
     <>
       {/* Plan Status Section */}
-      <section className="mb-8">
+      <section className="mb-8 space-y-4">
         <PlanStatus />
       </section>
 
@@ -90,6 +102,7 @@ async function Dashboard() {
                 profileName={interview.profileName}
                 jobTargetTitle={interview.jobTargetTitle}
                 jobTargetCompany={interview.jobTargetCompany}
+                duration={interview.duration}
               />
             ))
           ) : (
@@ -116,6 +129,7 @@ async function Dashboard() {
                 profileName={interview.profileName}
                 jobTargetTitle={interview.jobTargetTitle}
                 jobTargetCompany={interview.jobTargetCompany}
+                duration={interview.duration}
               />
             ))
           ) : (
