@@ -28,32 +28,32 @@ async function Dashboard() {
 
   // Helper function to enrich interview data with personalization info
   const enrichInterviewData = async (interviews: Interview[]) => {
-    return Promise.all(
-      interviews.map(async (interview) => {
-        let profileName = undefined;
-        let jobTargetTitle = undefined;
-        let jobTargetCompany = undefined;
+    const profileIds = [...new Set(interviews.map(i => i.profileId).filter(Boolean))];
+    const jobTargetIds = [...new Set(interviews.map(i => i.jobTargetId).filter(Boolean))];
 
-        // Fetch profile and job target data if available
-        if (interview.profileId) {
-          const profile = await getProfileById(interview.profileId);
-          profileName = profile?.name;
-        }
+    const [profilesData, jobTargetsData] = await Promise.all([
+      profileIds.length > 0 
+        ? Promise.all(profileIds.map(id => getProfileById(id!)))
+        : Promise.resolve([]),
+      jobTargetIds.length > 0
+        ? Promise.all(jobTargetIds.map(id => getJobTargetById(id!)))
+        : Promise.resolve([])
+    ]);
 
-        if (interview.jobTargetId) {
-          const jobTarget = await getJobTargetById(interview.jobTargetId);
-          jobTargetTitle = jobTarget?.title;
-          jobTargetCompany = jobTarget?.company;
-        }
+    const profilesMap = new Map(profilesData.filter(Boolean).map(p => [p!.id, p]));
+    const jobTargetsMap = new Map(jobTargetsData.filter(Boolean).map(jt => [jt!.id, jt]));
 
-        return {
-          ...interview,
-          profileName,
-          jobTargetTitle,
-          jobTargetCompany,
-        };
-      })
-    );
+    return interviews.map((interview) => {
+      const profile = interview.profileId ? profilesMap.get(interview.profileId) : undefined;
+      const jobTarget = interview.jobTargetId ? jobTargetsMap.get(interview.jobTargetId) : undefined;
+
+      return {
+        ...interview,
+        profileName: profile?.name,
+        jobTargetTitle: jobTarget?.title,
+        jobTargetCompany: jobTarget?.company,
+      };
+    });
   };
 
   // Enrich both interview sets with personalization data
