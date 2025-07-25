@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/actions/auth.action";
 import { getJobTargetsByUserId } from "@/lib/actions/job-target.action";
-import { Plus, Briefcase, Building, Target, Edit, Loader } from "lucide-react";
+import { Plus, Briefcase, Building, Target, Loader } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const JobTargetsPage = () => {
@@ -158,16 +158,6 @@ const JobTargetsPage = () => {
 
                 <div className="flex space-x-2">
                   <Button
-                    asChild
-                    variant="outline"
-                    className="flex-1 bg-dark-200 text-light-100 hover:bg-dark-200/80 border-light-600"
-                  >
-                    <Link href={`/job-targets/${jobTarget.id}`}>
-                      <Edit className="h-4 w-4 mr-2" />
-                      View Details
-                    </Link>
-                  </Button>
-                  <Button
                     onClick={() =>
                       handleNavigate(
                         `/onboarding/setup-interview?jobTargetId=${jobTarget.id}`
@@ -177,7 +167,7 @@ const JobTargetsPage = () => {
                       navigatingTo ===
                       `/onboarding/setup-interview?jobTargetId=${jobTarget.id}`
                     }
-                    className="flex-1 btn-primary"
+                    className="w-full btn-primary"
                   >
                     {navigatingTo ===
                     `/onboarding/setup-interview?jobTargetId=${jobTarget.id}` ? (
