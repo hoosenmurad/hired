@@ -30,20 +30,15 @@ const parsedCVSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    console.log("CV parsing request received");
-
     const formData = await request.formData();
     const file = formData.get("cv") as File;
 
     if (!file) {
-      console.log("No file provided");
       return NextResponse.json(
         { success: false, error: "No CV file uploaded" },
         { status: 400 }
       );
     }
-
-    console.log("File received:", file.name, file.type, file.size);
 
     // Validate file size (max 10MB for PDF/text files)
     if (file.size > 10 * 1024 * 1024) {
@@ -62,7 +57,6 @@ export async function POST(request: NextRequest) {
       file.type === "application/pdf" || file.name.endsWith(".pdf");
 
     if (!isTextFile && !isPdfFile) {
-      console.log("Unsupported file type:", file.type);
       return NextResponse.json(
         {
           success: false,
@@ -73,15 +67,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log("Starting AI parsing with Gemini");
-
     let result;
 
     if (isPdfFile) {
       // Handle PDF files using Firebase AI Logic patterns
-      console.log(
-        "Processing PDF file with Gemini following Firebase AI Logic patterns"
-      );
 
       // Convert file to base64 following Firebase recommendations
       const arrayBuffer = await file.arrayBuffer();
@@ -124,34 +113,8 @@ Return only valid JSON. Omit fields if information is unclear or missing.`,
           },
         ],
       });
-
-      // Clean the result data following Firebase best practices
-      if (result.object) {
-        // Clean summary field
-        if (result.object.summary) {
-          result.object.summary = result.object.summary
-            .replace(/\n+/g, " ")
-            .replace(/\s+/g, " ")
-            .trim()
-            .substring(0, 500); // Limit as per Firebase recommendations
-        }
-
-        // Clean experience descriptions
-        if (result.object.experience) {
-          result.object.experience = result.object.experience.map((exp) => ({
-            ...exp,
-            description:
-              exp.description
-                ?.replace(/\n+/g, " ")
-                ?.replace(/\s+/g, " ")
-                ?.trim()
-                ?.substring(0, 300) || "",
-          }));
-        }
-      }
     } else {
       // Handle text files
-      console.log("Processing text file");
       const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
       const extractedText = buffer.toString("utf-8");
@@ -193,15 +156,8 @@ Return only valid JSON. Omit fields if information is unclear or missing.`,
       });
     }
 
-    console.log("AI parsing completed successfully");
-
     // Additional safety check and cleaning
     if (result.object) {
-      console.log(
-        "Raw result object:",
-        JSON.stringify(result.object, null, 2).substring(0, 500) + "..."
-      );
-
       // Clean all string fields recursively
       const cleanObject = (obj: unknown): unknown => {
         if (typeof obj === "string") {
@@ -221,17 +177,12 @@ Return only valid JSON. Omit fields if information is unclear or missing.`,
       };
 
       const cleanedResult = cleanObject(result.object);
-      console.log(
-        "Cleaned result:",
-        JSON.stringify(cleanedResult, null, 2).substring(0, 500) + "..."
-      );
 
       return NextResponse.json({
         success: true,
         data: cleanedResult,
       });
     } else {
-      console.log("No object in result");
       return NextResponse.json(
         {
           success: false,
@@ -242,44 +193,10 @@ Return only valid JSON. Omit fields if information is unclear or missing.`,
     }
   } catch (error) {
     console.error("Error parsing CV:", error);
-
-    // Check if it's a Gemini API error
-    if (error instanceof Error) {
-      if (error.message.includes("API key")) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: "AI service configuration error. Please contact support.",
-          },
-          { status: 500 }
-        );
-      }
-      if (error.message.includes("quota") || error.message.includes("limit")) {
-        return NextResponse.json(
-          {
-            success: false,
-            error:
-              "AI service temporarily unavailable. Please try again later.",
-          },
-          { status: 503 }
-        );
-      }
-      if (error.message.includes("file") || error.message.includes("PDF")) {
-        return NextResponse.json(
-          {
-            success: false,
-            error:
-              "Failed to process the uploaded file. Please ensure it's a valid PDF or text file.",
-          },
-          { status: 400 }
-        );
-      }
-    }
-
     return NextResponse.json(
       {
         success: false,
-        error: "Failed to parse CV. Please try again or contact support.",
+        error: "An error occurred while parsing the CV",
       },
       { status: 500 }
     );

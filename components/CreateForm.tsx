@@ -235,8 +235,8 @@ const CreateForm = () => {
                 </h3>
               </div>
               <p className="text-[#8e96ac] text-sm">
-                Use your profile and job targets for AI-generated questions
-                tailored to your experience and goals.
+                Use your profile and job targets for tailored to your experience
+                and goals.
               </p>
 
               <div className="flex items-center space-x-2">
