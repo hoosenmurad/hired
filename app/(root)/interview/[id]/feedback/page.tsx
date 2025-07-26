@@ -11,6 +11,19 @@ import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/actions/auth.action";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 
+// Type definitions for enhanced feedback structure
+type EnhancedStrength = {
+  area: string;
+  description: string;
+};
+
+type EnhancedAreaForImprovement = {
+  area: string;
+  description: string;
+  priority: "High" | "Medium" | "Low";
+  actionableSteps: string[];
+};
+
 const Feedback = async ({
   params,
   searchParams,
@@ -213,9 +226,9 @@ const Feedback = async ({
                 ) : (
                   <>
                     <strong className="text-white">
-                      {(strength as any).area}:
+                      {(strength as EnhancedStrength).area}:
                     </strong>{" "}
-                    {(strength as any).description}
+                    {(strength as EnhancedStrength).description}
                   </>
                 )}
               </div>
@@ -239,29 +252,33 @@ const Feedback = async ({
                   <div className="mb-2">
                     <span className="text-primary-200 mr-2">•</span>
                     <strong className="text-white">
-                      {(area as any).area}:
+                      {(area as EnhancedAreaForImprovement).area}:
                     </strong>{" "}
-                    {(area as any).description}
+                    {(area as EnhancedAreaForImprovement).description}
                     <span
                       className={`ml-2 px-2 py-1 rounded text-xs ${
-                        (area as any).priority === "High"
+                        (area as EnhancedAreaForImprovement).priority === "High"
                           ? "bg-red-500/20 text-red-300"
-                          : (area as any).priority === "Medium"
+                          : (area as EnhancedAreaForImprovement).priority ===
+                            "Medium"
                           ? "bg-yellow-500/20 text-yellow-300"
                           : "bg-green-500/20 text-green-300"
                       }`}
                     >
-                      {(area as any).priority} Priority
+                      {(area as EnhancedAreaForImprovement).priority} Priority
                     </span>
                   </div>
-                  {(area as any).actionableSteps &&
-                    (area as any).actionableSteps.length > 0 && (
+                  {(area as EnhancedAreaForImprovement).actionableSteps &&
+                    (area as EnhancedAreaForImprovement).actionableSteps
+                      .length > 0 && (
                       <div className="ml-6 mt-2">
                         <p className="text-sm text-light-100/80 mb-1">
                           Action steps:
                         </p>
                         <ul className="space-y-1">
-                          {(area as any).actionableSteps.map(
+                          {(
+                            area as EnhancedAreaForImprovement
+                          ).actionableSteps.map(
                             (step: string, stepIndex: number) => (
                               <li
                                 key={stepIndex}
