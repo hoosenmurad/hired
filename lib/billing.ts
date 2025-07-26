@@ -176,3 +176,14 @@ export async function getSessionTimeoutMinutes(
 
   return Math.min(calculatedTimeout, remainingMinutes, 60); // Never exceed 60 minutes
 }
+
+// Legacy function for VAPI webhook compatibility
+export async function deductMinutesFromUser(
+  userId: string,
+  minutes: number
+): Promise<void> {
+  await incrementUsage(userId, "sessionMinutes", minutes);
+}
+
+// Legacy export for backward compatibility
+export const PLAN_LIMITS = PLAN_CONFIGS;

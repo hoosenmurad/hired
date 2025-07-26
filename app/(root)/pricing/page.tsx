@@ -2,8 +2,9 @@
 
 import { PricingTable } from "@clerk/nextjs";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-const Pricing = () => {
+function PricingContent() {
   const searchParams = useSearchParams();
   const isOnboarding = searchParams.get("onboarding") === "true";
 
@@ -149,6 +150,14 @@ const Pricing = () => {
         </div>
       </div>
     </div>
+  );
+}
+
+const Pricing = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PricingContent />
+    </Suspense>
   );
 };
 

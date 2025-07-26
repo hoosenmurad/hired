@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
           });
 
           // Deduct the actual interview time from user's account
-          await deductMinutesFromUser(durationMinutes);
+          await deductMinutesFromUser(userId, durationMinutes);
 
           console.log(
             `Interview ${interviewId} ended. Duration: ${durationMinutes} minutes deducted from user account`
