@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { generateObject } from "ai";
 import { google } from "@ai-sdk/google";
 import { z } from "zod";
+import { PROMPTS, validateContextLimits } from "@/lib/prompts";
 
 const parsedJobSchema = z.object({
   title: z.string(),
@@ -59,11 +60,28 @@ export async function POST(request: NextRequest) {
       }
 
       if (isPdfFile) {
-        // Handle PDF files using Firebase AI Logic patterns
-
-        // Convert file to base64 following Firebase recommendations
+        // Handle PDF files with optimized prompt
         const arrayBuffer = await file.arrayBuffer();
         const base64Data = Buffer.from(arrayBuffer).toString("base64");
+
+        const prompt = PROMPTS.JOB_PARSE_PDF();
+
+        // Validate context limits for PDF + prompt
+        const validation = validateContextLimits(
+          prompt,
+          base64Data,
+          "gemini-2.5-flash"
+        );
+        if (!validation.isValid) {
+          return NextResponse.json(
+            {
+              success: false,
+              error:
+                "Job description file is too large to process. Please use a smaller file or convert to text.",
+            },
+            { status: 400 }
+          );
+        }
 
         result = await generateObject({
           model: google("gemini-2.5-flash"),
@@ -74,44 +92,7 @@ export async function POST(request: NextRequest) {
               content: [
                 {
                   type: "text",
-                  text: `Analyze this job description PDF document and extract structured information. Return clean, valid JSON.
-
-IMPORTANT INSTRUCTIONS:
-- Extract all required information accurately
-- Keep descriptions concise but comprehensive
-- Remove excessive whitespace and formatting artifacts
-- Use professional language
-- Make reasonable inferences if information is implicit
-
-EXTRACT THE FOLLOWING:
-
-1. **Job Title**: Extract the exact job title/position name
-
-2. **Company Name**: Find the company/organization name
-
-3. **Job Description**: Create a comprehensive summary including:
-   - What the role involves
-   - Company/department context
-   - Key objectives and goals
-   - Relevant company information
-
-4. **Key Responsibilities**: Extract ALL duties and responsibilities. Include:
-   - Day-to-day tasks
-   - Project responsibilities
-   - Collaboration duties
-   - Strategic initiatives
-   - Reporting responsibilities
-
-5. **Required Skills**: Extract ALL skills and requirements. Include:
-   - Years of experience required
-   - Technical skills and tools
-   - Soft skills and abilities
-   - Educational requirements
-   - Industry experience
-   - Preferred qualifications
-
-Return structured JSON with responsibilities and skills as arrays of strings.
-Each item should be clear and actionable. Do not leave any field empty.`,
+                  text: prompt,
                 },
                 {
                   type: "file",
@@ -123,7 +104,7 @@ Each item should be clear and actionable. Do not leave any field empty.`,
           ],
         });
       } else {
-        // Handle text files
+        // Handle text files with optimized prompt
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
         const extractedText = buffer.toString("utf-8");
@@ -140,30 +121,33 @@ Each item should be clear and actionable. Do not leave any field empty.`,
           );
         }
 
+        const prompt = PROMPTS.JOB_PARSE_TEXT(extractedText);
+
+        // Validate context limits
+        const validation = validateContextLimits(
+          prompt,
+          "",
+          "gemini-2.0-flash"
+        );
+        if (!validation.isValid) {
+          return NextResponse.json(
+            {
+              success: false,
+              error:
+                "Job description text is too long to process. Please shorten the content.",
+            },
+            { status: 400 }
+          );
+        }
+
         result = await generateObject({
           model: google("gemini-2.0-flash-001"),
           schema: parsedJobSchema,
-          prompt: `
-            Parse the following job description and extract structured information:
-
-            Job Description Text:
-            ${extractedText.substring(0, 10000)} ${
-            extractedText.length > 10000 ? "...(truncated)" : ""
-          }
-
-            Please extract:
-            1. Job title
-            2. Company name
-            3. Overall job description (summary of the role)
-            4. Key responsibilities (as an array of specific duties)
-            5. Required skills (as an array including experience, technical skills, education, etc.)
-
-            Format the response as clean JSON. If any information is not available, make reasonable inferences based on context.
-          `,
+          prompt: prompt,
         });
       }
     } else if (textInput && textInput.trim().length > 0) {
-      // Handle direct text input
+      // Handle direct text input with optimized prompt
       if (textInput.trim().length < 50) {
         return NextResponse.json(
           {
@@ -175,139 +159,115 @@ Each item should be clear and actionable. Do not leave any field empty.`,
         );
       }
 
-      result = await generateObject({
-        model: google("gemini-2.0-flash-001"),
-        schema: parsedJobSchema,
-        prompt: `
-          Parse the following job description and extract structured information:
+      const prompt = PROMPTS.JOB_PARSE_TEXT(textInput);
 
-          Job Description:
-          ${textInput.substring(0, 10000)} ${
-          textInput.length > 10000 ? "...(truncated)" : ""
-        }
-
-          Please extract:
-          1. Job title
-          2. Company name
-          3. Overall job description (summary of the role)
-          4. Key responsibilities (as an array of specific duties)
-          5. Required skills (as an array including experience, technical skills, education, etc.)
-
-          Format the response as clean JSON. If any information is not available, make reasonable inferences based on context.
-        `,
-      });
-    } else if (urlInput && urlInput.trim().length > 0) {
-      // Handle URL input
-      const url = urlInput.trim();
-
-      // Basic URL validation
-      try {
-        new URL(url);
-      } catch {
+      // Validate context limits
+      const validation = validateContextLimits(prompt, "", "gemini-2.0-flash");
+      if (!validation.isValid) {
         return NextResponse.json(
           {
             success: false,
-            error: "Invalid URL format. Please provide a valid URL.",
+            error:
+              "Job description text is too long to process. Please shorten the content.",
           },
           { status: 400 }
         );
       }
 
-      // Fetch content from URL
+      result = await generateObject({
+        model: google("gemini-2.0-flash-001"),
+        schema: parsedJobSchema,
+        prompt: prompt,
+      });
+    } else if (urlInput && urlInput.trim().length > 0) {
+      // Handle URL input - fetch and process
       try {
-        const response = await fetch(url, {
+        const response = await fetch(urlInput, {
           headers: {
             "User-Agent": "Mozilla/5.0 (compatible; JobParser/1.0)",
           },
         });
 
         if (!response.ok) {
-          return NextResponse.json(
-            {
-              success: false,
-              error: `Failed to fetch content from URL. Status: ${response.status}`,
-            },
-            { status: 400 }
-          );
+          throw new Error(`HTTP ${response.status}`);
         }
 
-        const jobText = await response.text();
+        const html = await response.text();
 
-        if (!jobText || jobText.trim().length < 100) {
-          return NextResponse.json(
-            {
-              success: false,
-              error:
-                "The URL content appears to be empty or too short to parse.",
-            },
-            { status: 400 }
-          );
-        }
-
-        // Parse the HTML content to extract text (basic text extraction)
-        const textContent = jobText
-          .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
-          .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+        // Basic HTML content extraction (could be enhanced with a proper parser)
+        const textContent = html
+          .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+          .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
           .replace(/<[^>]*>/g, " ")
           .replace(/\s+/g, " ")
           .trim();
 
+        if (textContent.length < 100) {
+          return NextResponse.json(
+            {
+              success: false,
+              error:
+                "Could not extract sufficient content from the URL. Please try a different URL or use direct text input.",
+            },
+            { status: 400 }
+          );
+        }
+
+        const prompt = PROMPTS.JOB_PARSE_TEXT(textContent);
+
+        // Validate context limits
+        const validation = validateContextLimits(
+          prompt,
+          "",
+          "gemini-2.0-flash"
+        );
+        if (!validation.isValid) {
+          return NextResponse.json(
+            {
+              success: false,
+              error:
+                "Content from URL is too long to process. Please use direct text input with shortened content.",
+            },
+            { status: 400 }
+          );
+        }
+
         result = await generateObject({
           model: google("gemini-2.0-flash-001"),
           schema: parsedJobSchema,
-          prompt: `
-            Parse the following job description content from a webpage and extract structured information:
-
-            Job Description Content:
-            ${textContent.substring(0, 15000)} ${
-            textContent.length > 15000 ? "...(truncated)" : ""
-          }
-
-            Please extract:
-            1. Job title (look for position/role names)
-            2. Company name (look for company/organization names)
-            3. Overall job description (summary of the role and company context)
-            4. Key responsibilities (as an array of specific duties and tasks)
-            5. Required skills (as an array including experience, technical skills, education, certifications, etc.)
-
-            Format the response as clean JSON. Focus on job-related content and ignore navigation, footer, or unrelated website content.
-            If any information is not clearly available, make reasonable inferences based on context.
-          `,
+          prompt: prompt,
         });
       } catch (error) {
-        console.error("Error fetching URL content:", error);
+        console.error("Error fetching URL:", error);
         return NextResponse.json(
           {
             success: false,
             error:
-              "Failed to fetch content from the provided URL. Please check the URL and try again.",
+              "Failed to fetch content from the provided URL. Please check the URL or use direct text input.",
           },
-          { status: 500 }
+          { status: 400 }
         );
       }
     }
 
-    // Process results
+    // Process and return the result
     if (result?.object) {
-      // Clean all string fields recursively
-      const cleanObject = (obj: unknown): unknown => {
-        if (typeof obj === "string") {
-          return obj.replace(/\n+/g, " ").replace(/\s+/g, " ").trim();
-        }
-        if (Array.isArray(obj)) {
-          return obj.map(cleanObject);
-        }
-        if (obj && typeof obj === "object") {
-          const cleaned: Record<string, unknown> = {};
-          for (const [key, value] of Object.entries(obj)) {
-            cleaned[key] = cleanObject(value);
-          }
-          return cleaned;
-        }
-        return obj;
+      // Clean the extracted data
+      const cleanedResult = {
+        title: result.object.title?.trim() || "",
+        company: result.object.company?.trim() || "",
+        description: result.object.description?.trim() || "",
+        responsibilities: Array.isArray(result.object.responsibilities)
+          ? result.object.responsibilities
+              .filter((r) => r?.trim())
+              .map((r) => r.trim())
+          : [],
+        requiredSkills: Array.isArray(result.object.requiredSkills)
+          ? result.object.requiredSkills
+              .filter((s) => s?.trim())
+              .map((s) => s.trim())
+          : [],
       };
-
-      const cleanedResult = cleanObject(result.object);
 
       return NextResponse.json({
         success: true,

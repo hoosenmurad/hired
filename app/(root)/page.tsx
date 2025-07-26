@@ -69,7 +69,7 @@ export default function LandingPage() {
                 asChild
                 className="btn-secondary px-6 py-3 rounded-full font-bold transition-colors"
               >
-                <Link href="/create">Create interview</Link>
+                <Link href="/create">Create quick interview</Link>
               </Button>
             </div>
 

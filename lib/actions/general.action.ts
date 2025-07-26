@@ -6,17 +6,29 @@ import { generateObject } from "ai";
 import { google } from "@ai-sdk/google";
 
 import { db } from "@/firebase/admin";
-import { feedbackSchema } from "@/constants";
+import { PROMPTS, validateContextLimits } from "@/lib/prompts";
+import {
+  enhancedFeedbackSchema,
+  getSystemLimitations,
+  generateNextSteps,
+  getPercentileForScore,
+} from "@/lib/scoring-system";
+import { getSessionComparison } from "@/lib/session-tracking";
 
 export async function createFeedback(params: CreateFeedbackParams) {
   const { interviewId, userId, transcript, feedbackId } = params;
 
   try {
-    // Get the interview to retrieve questions
+    // Get the interview to retrieve questions and level
     const interview = await getInterviewById(interviewId);
     if (!interview) {
       throw new Error("Interview not found");
     }
+
+    // Determine experience level from interview data
+    const level = interview.level?.toLowerCase() || "mid";
+    const validLevels = ["junior", "mid", "senior"];
+    const experienceLevel = validLevels.includes(level) ? level : "mid";
 
     const formattedTranscript = transcript
       .map(
@@ -25,49 +37,99 @@ export async function createFeedback(params: CreateFeedbackParams) {
       )
       .join("");
 
+    // Generate enhanced feedback prompt with level calibration
+    const prompt = PROMPTS.FEEDBACK_ANALYSIS(
+      interview.questions,
+      formattedTranscript,
+      experienceLevel
+    );
+
+    // Validate context limits
+    const validation = validateContextLimits(prompt, "", "gemini-2.0-flash");
+    if (!validation.isValid) {
+      console.warn(
+        `Feedback context limit exceeded: ${validation.estimatedTokens}/${validation.maxTokens} tokens`
+      );
+      // For feedback, we'll proceed but log the warning as it's critical functionality
+    }
+
     const { object } = await generateObject({
       model: google("gemini-2.0-flash-001", {
         structuredOutputs: false,
       }),
-      schema: feedbackSchema,
-      prompt: `
-        You are an AI interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories. Be thorough and detailed in your analysis. Don't be lenient with the candidate. If there are mistakes or areas for improvement, point them out.
-        
-        Interview Questions:
-        ${interview.questions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
-        
-        Transcript:
-        ${formattedTranscript}
-
-        Please provide:
-        1. Score the candidate from 0 to 100 in the following areas:
-        - **Communication Skills**: Clarity, articulation, structured responses.
-        - **Technical Knowledge**: Understanding of key concepts for the role.
-        - **Problem-Solving**: Ability to analyze problems and propose solutions.
-        - **Cultural & Role Fit**: Alignment with company values and job role.
-        - **Confidence & Clarity**: Confidence in responses, engagement, and clarity.
-        
-        2. For each question asked, provide:
-        - The question text
-        - The candidate's response (summarized)
-        - A rating from 0-100 for that specific response
-        - Specific feedback on that response
-        
-        3. Overall strengths, areas for improvement, and final assessment.
-        `,
+      schema: enhancedFeedbackSchema,
+      prompt: prompt,
       system:
-        "You are a professional interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories",
+        "You are a professional interviewer providing realistic, calibrated assessment. Use the full scoring range and be honest about gaps. Focus on interview communication skills.",
     });
+
+    // Get session comparison for progress tracking
+    const sessionComparison = await getSessionComparison(
+      userId,
+      object.totalScore
+    );
+
+    // Enhance the feedback with additional computed fields
+    const enhancedFeedback = {
+      ...object,
+      // Add system limitations
+      limitations:
+        object.limitations?.length > 0
+          ? object.limitations
+          : getSystemLimitations(),
+
+      // Add computed next steps if not provided
+      nextSteps:
+        object.nextSteps?.length > 0
+          ? object.nextSteps
+          : generateNextSteps(object.categoryScores, object.totalScore),
+
+      // Add percentile information if missing
+      overallPercentile:
+        object.overallPercentile ||
+        getPercentileForScore(object.totalScore, "overall", experienceLevel),
+
+      // Add session comparison data
+      sessionComparison,
+
+      // Add metadata
+      metadata: {
+        experienceLevel,
+        assessmentDate: new Date().toISOString(),
+        questionCount: interview.questions.length,
+        transcriptLength: formattedTranscript.length,
+        systemVersion: "enhanced-v1.0",
+      },
+    };
 
     const feedback = {
       interviewId: interviewId,
       userId: userId,
-      totalScore: object.totalScore,
-      categoryScores: object.categoryScores,
-      questionRatings: object.questionRatings,
-      strengths: object.strengths,
-      areasForImprovement: object.areasForImprovement,
-      finalAssessment: object.finalAssessment,
+
+      // Enhanced scoring data
+      totalScore: enhancedFeedback.totalScore,
+      overallPercentile: enhancedFeedback.overallPercentile,
+      reliabilityScore: enhancedFeedback.reliabilityScore,
+
+      // Detailed category analysis
+      categoryScores: enhancedFeedback.categoryScores,
+      questionRatings: enhancedFeedback.questionRatings,
+
+      // Enhanced insights
+      strengths: enhancedFeedback.strengths,
+      areasForImprovement: enhancedFeedback.areasForImprovement,
+      finalAssessment: enhancedFeedback.finalAssessment,
+
+      // Transparency and guidance
+      limitations: enhancedFeedback.limitations,
+      nextSteps: enhancedFeedback.nextSteps,
+
+      // Session tracking
+      sessionComparison: enhancedFeedback.sessionComparison,
+
+      // Metadata
+      metadata: enhancedFeedback.metadata,
+
       createdAt: new Date().toISOString(),
     };
 

@@ -1,10 +1,15 @@
 import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
 import { auth } from "@clerk/nextjs/server";
-
 import { db } from "@/firebase/admin";
 import { getRandomInterviewCover } from "@/lib/utils";
 import { getUserPlanInfo } from "@/lib/billing";
+import {
+  PROMPTS,
+  validateContextLimits,
+  optimizeProfileData,
+  optimizeJobTargetData,
+} from "@/lib/prompts";
 
 // Use the global type definitions for consistency
 // These match the interfaces defined in types/index.d.ts
@@ -117,106 +122,79 @@ export async function POST(request: Request) {
         ]);
 
         if (profileDoc.exists && jobTargetDoc.exists) {
-          const profile = {
+          const rawProfile = {
             id: profileDoc.id,
             ...profileDoc.data(),
           } as ProfileData;
-          const jobTarget = {
+          const rawJobTarget = {
             id: jobTargetDoc.id,
             ...jobTargetDoc.data(),
           } as JobTargetData;
 
-          // Generate personalized prompt with enhanced content
-          prompt = `Create a comprehensive interview for a candidate with the following detailed profile:
+          // Optimize data for token efficiency
+          const profile = optimizeProfileData(rawProfile);
+          const jobTarget = optimizeJobTargetData(rawJobTarget);
 
-CANDIDATE PROFILE:
-- Name: ${profile.name}
-- Professional Summary: ${profile.summary}
-- Core Skills: ${profile.skills.join(", ")}
-- Career Goals: ${profile.goals}
-- Professional Experience: ${profile.experience
-            .map(
-              (exp) =>
-                `${exp.title} at ${exp.company} (${exp.duration}) - ${exp.description}`
-            )
-            .join(" | ")}
-
-TARGET ROLE DETAILS:
-- Position: ${jobTarget.title}
-- Company: ${jobTarget.company}
-- Required Skills: ${jobTarget.requiredSkills.join(", ")}
-- Key Responsibilities: ${jobTarget.responsibilities.join(", ")}
-- Job Description: ${jobTarget.description}
-
-INTERVIEW PARAMETERS:
-- Interview Type: ${
-            type || "mixed"
-          } (focus on behavioral vs technical questions)
-- Experience Level: ${level || difficulty}
-- Interview Tone: ${tone} (adjust question style accordingly)
-- Difficulty Level: ${difficulty}
-- Number of Questions: ${amount}
-- Additional Skills Context: ${specialtySkills || "Not specified"}
-
-INSTRUCTIONS:
-1. Create ${amount} highly personalized interview questions that directly relate to the candidate's experience and the target role
-2. Consider the candidate's background when formulating questions
-3. Match the interview type, tone, and difficulty level specified
-4. Ensure questions test both relevant skills and cultural fit
-5. Make questions voice-assistant friendly (no special characters like "/" or "*")
-6. Balance technical and behavioral questions based on the interview type
-7. Reference specific experiences or skills when relevant
-
-Return the questions formatted like this:
-["Question 1", "Question 2", "Question 3"]`;
-
-          // Set personalized interview data
-          interviewData = {
-            ...interviewData,
-            profileId: profileId,
-            jobTargetId: jobTargetId,
-            role: `${jobTarget.title} at ${jobTarget.company}`,
+          // Generate optimized personalized prompt
+          prompt = PROMPTS.INTERVIEW_PERSONALIZED({
+            profile,
+            jobTarget,
             type: type || "mixed",
             level: level || difficulty,
-            specialtySkills: jobTarget.requiredSkills,
-            techstack: jobTarget.requiredSkills,
             tone,
             difficulty,
-            isPersonalized: true,
-          };
+            amount,
+            specialtySkills,
+          });
 
-          isPersonalized = true;
+          // Validate context limits
+          const validation = validateContextLimits(
+            prompt,
+            "",
+            "gemini-2.0-flash"
+          );
+          if (!validation.isValid) {
+            console.warn(
+              `Context limit exceeded: ${validation.estimatedTokens}/${validation.maxTokens} tokens`
+            );
+            // Fallback to standard prompt if personalized is too large
+            isPersonalized = false;
+          } else {
+            // Set personalized interview data
+            interviewData = {
+              ...interviewData,
+              profileId: profileId,
+              jobTargetId: jobTargetId,
+              role: `${jobTarget.title} at ${jobTarget.company}`,
+              type: type || "mixed",
+              level: level || difficulty,
+              specialtySkills: jobTarget.requiredSkills || [],
+              techstack: jobTarget.requiredSkills || [],
+              tone,
+              difficulty,
+              isPersonalized: true,
+            };
+
+            isPersonalized = true;
+          }
         }
-      } catch {
+      } catch (error) {
+        console.error("Error fetching personalization data:", error);
         // Fall back to standard interview if personalization fails
       }
     }
 
-    // Fallback to original prompt if no personalization or data not found
+    // Fallback to optimized standard prompt if no personalization or context exceeded
     if (!isPersonalized) {
-      prompt = `Create interview questions for the following job interview scenario:
-
-JOB DETAILS:
-- Role: ${role}
-- Experience Level: ${level}
-- Required Skills/Tech Stack: ${specialtySkills}
-- Interview Focus: ${type} (behavioral vs technical emphasis)
-
-INTERVIEW SETTINGS:
-- Tone: ${tone} (adjust question style accordingly)
-- Difficulty: ${difficulty}
-- Number of Questions: ${amount}
-
-INSTRUCTIONS:
-1. Generate ${amount} relevant interview questions
-2. Balance the focus based on the interview type specified
-3. Match the experience level and difficulty appropriately
-4. Ensure questions are voice-assistant friendly (no special characters like "/" or "*")
-5. Create practical, realistic questions for this role and level
-6. Adjust tone: professional (formal), casual (conversational), or challenging (rigorous)
-
-Return the questions formatted like this:
-["Question 1", "Question 2", "Question 3"]`;
+      prompt = PROMPTS.INTERVIEW_STANDARD({
+        role,
+        level,
+        specialtySkills,
+        type,
+        tone,
+        difficulty,
+        amount,
+      });
 
       // Set standard interview data
       interviewData = {
@@ -242,74 +220,61 @@ Return the questions formatted like this:
     // Parse and store the interview with cleaning and fallback handling
     let parsedQuestions;
     try {
-      let cleanedQuestions = questions.trim();
-
-      // Remove markdown code blocks if present
-      cleanedQuestions = cleanedQuestions
-        .replace(/^```json\s*/, "")
-        .replace(/\s*```$/, "");
-      cleanedQuestions = cleanedQuestions
-        .replace(/^```\s*/, "")
-        .replace(/\s*```$/, "");
-
-      // Remove any leading/trailing whitespace
-      cleanedQuestions = cleanedQuestions.trim();
-
+      // Remove any potential markdown formatting
+      const cleanedQuestions = questions.replace(/```json\n?|\n?```/g, "");
       parsedQuestions = JSON.parse(cleanedQuestions);
 
-      // Validate that it's an array
+      // Ensure it's an array
       if (!Array.isArray(parsedQuestions)) {
         throw new Error("Response is not an array");
       }
-    } catch {
-      // Fallback: try to extract questions from text using multiple patterns
-      let fallbackQuestions = [];
 
-      // Try to find JSON array in the text
-      const jsonMatch = questions.match(/\[[\s\S]*\]/);
-      if (jsonMatch) {
-        try {
-          fallbackQuestions = JSON.parse(jsonMatch[0]);
-        } catch {
-          // If that fails, try text extraction
-          fallbackQuestions = questions
-            .split(/\d+\.|\n-|\n\*|Here are \d+ |Here are the \d+ /)
-            .filter((q) => q.trim().length > 10)
-            .map((q) => q.trim().replace(/^["'\s]+|["'\s]+$/g, ""))
-            .filter((q) => q.length > 0)
-            .slice(0, amount);
-        }
-      } else {
-        // Extract from numbered/bulleted list
-        fallbackQuestions = questions
-          .split(/\d+\.|\n-|\n\*|Here are \d+ |Here are the \d+ /)
-          .filter((q) => q.trim().length > 10)
-          .map((q) => q.trim().replace(/^["'\s]+|["'\s]+$/g, ""))
-          .filter((q) => q.length > 0)
-          .slice(0, amount);
+      // Limit questions if too many were generated
+      if (parsedQuestions.length > amount * 1.5) {
+        parsedQuestions = parsedQuestions.slice(0, amount);
       }
-
-      if (fallbackQuestions.length === 0) {
-        return Response.json(
-          {
-            success: false,
-            error: "Failed to generate valid questions",
-            details: "AI response could not be parsed",
-          },
-          { status: 500 }
-        );
-      }
-
-      parsedQuestions = fallbackQuestions;
+    } catch (parseError) {
+      console.error("Failed to parse questions JSON:", parseError);
+      // Fallback: split by lines and clean
+      parsedQuestions = questions
+        .split("\n")
+        .filter((line) => line.trim().length > 10)
+        .map((line) => line.replace(/^\d+\.\s*/, "").trim())
+        .filter((line) => line.length > 0)
+        .slice(0, amount);
     }
 
+    // Final validation
+    if (!parsedQuestions || parsedQuestions.length === 0) {
+      return Response.json(
+        {
+          success: false,
+          error: "Failed to generate questions",
+        },
+        { status: 500 }
+      );
+    }
+
+    // Store interview in database
     interviewData.questions = parsedQuestions;
+    const docRef = db.collection("interviews").doc();
+    await docRef.set(interviewData);
 
-    await db.collection("interviews").add(interviewData);
-
-    return Response.json({ success: true }, { status: 200 });
+    return Response.json({
+      success: true,
+      interviewId: docRef.id,
+      questions: parsedQuestions,
+      isPersonalized,
+    });
   } catch (error) {
-    return Response.json({ success: false, error: error }, { status: 500 });
+    console.error("Error generating interview:", error);
+    return Response.json(
+      {
+        success: false,
+        error: "An error occurred while generating the interview",
+      },
+      { status: 500 }
+    );
   }
 }
 
