@@ -3,6 +3,11 @@ import { generateObject } from "ai";
 import { google } from "@ai-sdk/google";
 import { z } from "zod";
 import { PROMPTS, validateContextLimits } from "@/lib/prompts";
+import {
+  checkQuotaAvailability,
+  incrementUsage,
+  getUserPlanInfo,
+} from "@/lib/billing";
 
 const parsedJobSchema = z.object({
   title: z.string(),
@@ -24,6 +29,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { success: false, error: "No job description provided" },
         { status: 400 }
+      );
+    }
+
+    // Check quota availability (allow non-subscribers to see UI but block creation)
+    const { isSubscribed, userId } = await getUserPlanInfo();
+
+    if (isSubscribed && userId) {
+      const quota = await checkQuotaAvailability(userId, "jobTarget");
+      if (!quota.allowed) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Job target limit reached. You have ${quota.remaining} of ${quota.limit} remaining this month.`,
+            quota: quota,
+          },
+          { status: 403 }
+        );
+      }
+    } else if (!isSubscribed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Please subscribe to a plan to create job targets.",
+          requiresSubscription: true,
+        },
+        { status: 403 }
       );
     }
 
@@ -180,24 +211,62 @@ export async function POST(request: NextRequest) {
         prompt: prompt,
       });
     } else if (urlInput && urlInput.trim().length > 0) {
-      // Handle URL input - fetch and process
+      // Enhanced URL handling with better error handling
       try {
-        const response = await fetch(urlInput, {
+        // Validate URL format
+        let validUrl: URL;
+        try {
+          validUrl = new URL(urlInput.trim());
+        } catch {
+          return NextResponse.json(
+            {
+              success: false,
+              error: "Invalid URL format. Please provide a valid URL.",
+            },
+            { status: 400 }
+          );
+        }
+
+        // Only allow http/https protocols
+        if (!["http:", "https:"].includes(validUrl.protocol)) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: "Only HTTP and HTTPS URLs are supported.",
+            },
+            { status: 400 }
+          );
+        }
+
+        const response = await fetch(validUrl.toString(), {
           headers: {
             "User-Agent": "Mozilla/5.0 (compatible; JobParser/1.0)",
+            Accept:
+              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
           },
+          redirect: "follow",
+          signal: AbortSignal.timeout(10000), // 10 second timeout
         });
 
         if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
+          return NextResponse.json(
+            {
+              success: false,
+              error: `Failed to fetch content from URL: ${response.status} ${response.statusText}`,
+            },
+            { status: 400 }
+          );
         }
 
         const html = await response.text();
 
-        // Basic HTML content extraction (could be enhanced with a proper parser)
+        // Enhanced HTML content extraction
         const textContent = html
           .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
           .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
+          .replace(/<nav\b[^<]*(?:(?!<\/nav>)<[^<]*)*<\/nav>/gi, "") // Remove navigation
+          .replace(/<header\b[^<]*(?:(?!<\/header>)<[^<]*)*<\/header>/gi, "") // Remove headers
+          .replace(/<footer\b[^<]*(?:(?!<\/footer>)<[^<]*)*<\/footer>/gi, "") // Remove footers
           .replace(/<[^>]*>/g, " ")
           .replace(/\s+/g, " ")
           .trim();
@@ -207,7 +276,7 @@ export async function POST(request: NextRequest) {
             {
               success: false,
               error:
-                "Could not extract sufficient content from the URL. Please try a different URL or use direct text input.",
+                "Could not extract sufficient job description content from the URL. The page may not contain a job posting or may be behind authentication.",
             },
             { status: 400 }
           );
@@ -239,6 +308,30 @@ export async function POST(request: NextRequest) {
         });
       } catch (error) {
         console.error("Error fetching URL:", error);
+
+        if (error instanceof Error) {
+          if (error.name === "TimeoutError") {
+            return NextResponse.json(
+              {
+                success: false,
+                error: "Request timed out. The URL took too long to respond.",
+              },
+              { status: 400 }
+            );
+          }
+
+          if (error.message.includes("fetch")) {
+            return NextResponse.json(
+              {
+                success: false,
+                error:
+                  "Network error occurred while fetching the URL. Please check the URL and try again.",
+              },
+              { status: 400 }
+            );
+          }
+        }
+
         return NextResponse.json(
           {
             success: false,
@@ -268,6 +361,11 @@ export async function POST(request: NextRequest) {
               .map((s) => s.trim())
           : [],
       };
+
+      // Increment usage for successful creation
+      if (isSubscribed && userId) {
+        await incrementUsage(userId, "jobTarget");
+      }
 
       return NextResponse.json({
         success: true,

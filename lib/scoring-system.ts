@@ -65,7 +65,8 @@ export const enhancedFeedbackSchema = z.object({
       improvement: z.string().optional(),
       consistencyNote: z.string().optional(),
     })
-    .optional(),
+    .optional()
+    .nullable(),
 });
 
 // Scoring benchmarks by role level

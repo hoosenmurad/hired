@@ -230,14 +230,27 @@ SCORING CALIBRATION FOR ${level.toUpperCase()} LEVEL:
 - 70-79: Adequate, meets requirements with minor gaps
 - 60-69: Below expectations, concerning gaps
 - 50-59: Significant deficiencies
-- Below 50: Major issues, not ready for role
+- 40-49: Major issues, substantial problems
+- 20-39: Very poor performance, serious concerns
+- 0-19: No meaningful response, unprofessional, or completely irrelevant
 
 SCORING GUIDELINES:
-- Use the FULL range 0-100, don't cluster around 70-80
-- Most candidates should score 55-85 range
-- Be critical and honest in evaluation
-- Scores above 85 should be rare and well-justified
+- Use the FULL range 0-100, don't cluster around 50-70
+- Most candidates should score 40-75 range for actual attempts
+- Be HARSH and honest in evaluation - this is realistic hiring
+- Scores above 80 should be rare and well-justified
 - Consider experience level expectations
+- NO RESPONSE = 0 points (not 50)
+- TEST RESPONSES = 0-10 points maximum
+- OFF-TOPIC RESPONSES = 0-20 points maximum
+- MINIMAL EFFORT = 10-30 points maximum
+
+CRITICAL SCORING RULES:
+1. If candidate says "testing", "just testing", or similar → 0-5 points maximum
+2. If candidate doesn't answer the question at all → 0-10 points maximum  
+3. If response is under 10 words of actual content → 0-20 points maximum
+4. If response shows zero effort or preparation → 0-25 points maximum
+5. Only give 50+ points if there's genuine attempt to answer the question
 
 EVIDENCE REQUIREMENTS:
 For each score, provide specific evidence from responses:
@@ -253,35 +266,50 @@ COMMUNICATION SKILLS:
 - 80-89: Clear communication, good structure, mostly complete
 - 70-79: Generally clear, adequate structure, some gaps
 - 60-69: Sometimes unclear, disorganized, missing details
-- <60: Frequently unclear, poor organization
+- 50-59: Frequently unclear, poor organization
+- 40-49: Very unclear communication, hard to follow
+- 20-39: Barely coherent, major communication issues
+- 0-19: No meaningful communication, testing responses, gibberish
 
 TECHNICAL KNOWLEDGE:
 - 90+: Deep understanding, current practices, excellent examples
 - 80-89: Solid foundation, good examples, minor gaps
 - 70-79: Adequate knowledge, some examples, moderate gaps
 - 60-69: Basic understanding, significant gaps, limited examples
-- <60: Fundamental gaps, outdated or incorrect knowledge
+- 50-59: Fundamental gaps, outdated or incorrect knowledge
+- 40-49: Very limited knowledge, major misconceptions
+- 20-39: Minimal technical understanding, mostly incorrect
+- 0-19: No technical knowledge demonstrated, irrelevant responses
 
 PROBLEM SOLVING:
 - 90+: Systematic approach, multiple solutions, considers trade-offs
 - 80-89: Logical approach, reasonable solutions, good analysis
 - 70-79: Basic approach, workable solutions, limited analysis
 - 60-69: Inconsistent approach, incomplete solutions
-- <60: Poor methodology, unclear solutions
+- 50-59: Poor methodology, unclear solutions
+- 40-49: Very poor problem-solving, illogical approach
+- 20-39: No clear methodology, completely confused approach
+- 0-19: No problem-solving demonstrated, off-topic or testing
 
 CULTURAL FIT:
 - 90+: Excellent professional values, collaboration, growth mindset
 - 80-89: Good professional presence, teamwork orientation
 - 70-79: Adequate professional behavior, some alignment
 - 60-69: Mixed signals, some concerning responses
-- <60: Poor alignment, conflicting values
+- 50-59: Poor alignment, conflicting values
+- 40-49: Unprofessional behavior, concerning attitudes
+- 20-39: Very unprofessional, major red flags
+- 0-19: Completely unprofessional, testing responses, inappropriate
 
 CONFIDENCE & CLARITY:
 - 90+: Confident, decisive, clear under pressure
 - 80-89: Generally confident, clear responses, minor hesitation
 - 70-79: Adequate confidence, some uncertainty but recovers
 - 60-69: Inconsistent confidence, unclear responses
-- <60: Low confidence affecting communication
+- 50-59: Low confidence affecting communication
+- 40-49: Very low confidence, frequent hesitation
+- 20-39: Extremely hesitant, barely able to respond
+- 0-19: No confidence, testing responses, complete uncertainty
 
 REQUIRED OUTPUT FORMAT:
 {

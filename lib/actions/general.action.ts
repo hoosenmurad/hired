@@ -15,14 +15,73 @@ import {
 } from "@/lib/scoring-system";
 import { getSessionComparison } from "@/lib/session-tracking";
 
+// Simple transcript validation
+function validateTranscript(transcript: { role: string; content: string }[]): {
+  isValid: boolean;
+  issues: string[];
+  completeness: number;
+} {
+  const issues: string[] = [];
+  let totalWords = 0;
+  let candidateResponseCount = 0;
+
+  for (const sentence of transcript) {
+    if (!sentence.content || sentence.content.trim().length < 5) {
+      issues.push("Found very short or empty responses");
+    }
+
+    totalWords += sentence.content.split(" ").length;
+
+    if (sentence.role === "user" || sentence.role === "candidate") {
+      candidateResponseCount++;
+    }
+  }
+
+  if (totalWords < 50) {
+    issues.push("Transcript is too short (less than 50 words)");
+  }
+
+  if (candidateResponseCount < 2) {
+    issues.push("Very few candidate responses detected");
+  }
+
+  const completeness = Math.min(100, (totalWords / 200) * 100); // Expect ~200 words minimum
+  const isValid = issues.length === 0 && completeness >= 40;
+
+  return { isValid, issues, completeness };
+}
+
 export async function createFeedback(params: CreateFeedbackParams) {
-  const { interviewId, userId, transcript, feedbackId } = params;
+  const { interviewId, userId, transcript, feedbackId, actualDurationMinutes } =
+    params;
 
   try {
     // Get the interview to retrieve questions and level
     const interview = await getInterviewById(interviewId);
     if (!interview) {
       throw new Error("Interview not found");
+    }
+
+    // Update interview document with completion data
+    if (actualDurationMinutes !== undefined) {
+      try {
+        await db.collection("interviews").doc(interviewId).update({
+          completedAt: new Date().toISOString(),
+          actualDurationMinutes: actualDurationMinutes,
+          status: "completed",
+        });
+      } catch (error) {
+        console.warn("Failed to update interview duration:", error);
+      }
+    }
+
+    // Validate transcript quality
+    const transcriptValidation = validateTranscript(transcript);
+    if (!transcriptValidation.isValid) {
+      console.warn(
+        `Transcript quality issues for interview ${interviewId}:`,
+        transcriptValidation.issues
+      );
     }
 
     // Determine experience level from interview data
@@ -53,15 +112,38 @@ export async function createFeedback(params: CreateFeedbackParams) {
       // For feedback, we'll proceed but log the warning as it's critical functionality
     }
 
-    const { object } = await generateObject({
-      model: google("gemini-2.0-flash-001", {
-        structuredOutputs: false,
-      }),
-      schema: enhancedFeedbackSchema,
-      prompt: prompt,
-      system:
-        "You are a professional interviewer providing realistic, calibrated assessment. Use the full scoring range and be honest about gaps. Focus on interview communication skills.",
-    });
+    let object;
+    try {
+      const result = await generateObject({
+        model: google("gemini-2.0-flash-001", {
+          structuredOutputs: false,
+        }),
+        schema: enhancedFeedbackSchema,
+        prompt: prompt,
+        system:
+          "You are a professional interviewer providing realistic, calibrated assessment. Use the full scoring range and be honest about gaps. Focus on interview communication skills.",
+      });
+
+      object = result.object;
+
+      if (!object || !object.totalScore) {
+        throw new Error("AI feedback generation returned invalid response");
+      }
+    } catch (aiError) {
+      console.error("AI feedback generation failed:", aiError);
+
+      // Return basic fallback feedback
+      return {
+        success: false,
+        error: "Failed to generate detailed feedback. Please try again.",
+        fallback: {
+          message: `Interview completed with ${interview.questions.length} questions.`,
+          transcriptQuality: transcriptValidation.completeness,
+          suggestion:
+            "The interview data has been saved. Please try generating feedback again in a moment.",
+        },
+      };
+    }
 
     // Get session comparison for progress tracking
     const sessionComparison = await getSessionComparison(
@@ -92,12 +174,26 @@ export async function createFeedback(params: CreateFeedbackParams) {
       // Add session comparison data
       sessionComparison,
 
+      // Add transcript quality info
+      transcriptQuality: {
+        completeness: transcriptValidation.completeness,
+        issues: transcriptValidation.issues,
+        isReliable: transcriptValidation.isValid,
+      },
+
       // Add metadata
       metadata: {
         experienceLevel,
         assessmentDate: new Date().toISOString(),
         questionCount: interview.questions.length,
         transcriptLength: formattedTranscript.length,
+        actualDurationMinutes: actualDurationMinutes || 0,
+        estimatedDurationMinutes: interview.questions.length * 3,
+        durationEfficiency: actualDurationMinutes
+          ? Math.round(
+              (actualDurationMinutes / (interview.questions.length * 3)) * 100
+            )
+          : 0,
         systemVersion: "enhanced-v1.0",
       },
     };
@@ -127,6 +223,9 @@ export async function createFeedback(params: CreateFeedbackParams) {
       // Session tracking
       sessionComparison: enhancedFeedback.sessionComparison,
 
+      // Quality indicators
+      transcriptQuality: enhancedFeedback.transcriptQuality,
+
       // Metadata
       metadata: enhancedFeedback.metadata,
 
@@ -146,7 +245,16 @@ export async function createFeedback(params: CreateFeedbackParams) {
     return { success: true, feedbackId: feedbackRef.id };
   } catch (error) {
     console.error("Error saving feedback:", error);
-    return { success: false };
+    return {
+      success: false,
+      error: "Failed to process interview feedback",
+      details:
+        process.env.NODE_ENV === "development"
+          ? error instanceof Error
+            ? error.message
+            : String(error)
+          : undefined,
+    };
   }
 }
 

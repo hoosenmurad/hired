@@ -3,7 +3,7 @@ import { google } from "@ai-sdk/google";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/firebase/admin";
 import { getRandomInterviewCover } from "@/lib/utils";
-import { getUserPlanInfo } from "@/lib/billing";
+import { checkQuotaAvailability, incrementUsage } from "@/lib/billing";
 import {
   PROMPTS,
   validateContextLimits,
@@ -89,14 +89,14 @@ export async function POST(request: Request) {
       );
     }
 
-    // Get user's plan info
-    const planInfo = await getUserPlanInfo();
-    if (!planInfo.isSubscribed) {
+    // Check quota before processing
+    const quota = await checkQuotaAvailability(userId, "interview");
+    if (!quota.allowed) {
       return Response.json(
         {
           success: false,
-          error: "Subscription required",
-          message: "Please subscribe to a plan to create interviews.",
+          error: `Interview limit reached. You have ${quota.remaining} of ${quota.limit} remaining this month.`,
+          quota: quota,
         },
         { status: 403 }
       );
@@ -217,41 +217,97 @@ export async function POST(request: Request) {
       prompt: prompt,
     });
 
-    // Parse and store the interview with cleaning and fallback handling
-    let parsedQuestions;
+    // Enhanced question parsing with multiple fallback strategies
+    let parsedQuestions: string[];
     try {
-      // Remove any potential markdown formatting
-      const cleanedQuestions = questions.replace(/```json\n?|\n?```/g, "");
+      // Strategy 1: Direct JSON parsing
+      const cleanedQuestions = questions
+        .replace(/```json\n?|\n?```/g, "")
+        .trim();
       parsedQuestions = JSON.parse(cleanedQuestions);
 
-      // Ensure it's an array
+      // Validate it's an array of strings
       if (!Array.isArray(parsedQuestions)) {
         throw new Error("Response is not an array");
       }
 
-      // Limit questions if too many were generated
-      if (parsedQuestions.length > amount * 1.5) {
-        parsedQuestions = parsedQuestions.slice(0, amount);
+      // Validate each item is a string
+      parsedQuestions = parsedQuestions.filter(
+        (q) => typeof q === "string" && q.trim().length > 0
+      );
+
+      if (parsedQuestions.length === 0) {
+        throw new Error("No valid questions found");
       }
     } catch (parseError) {
-      console.error("Failed to parse questions JSON:", parseError);
-      // Fallback: split by lines and clean
-      parsedQuestions = questions
-        .split("\n")
-        .filter((line) => line.trim().length > 10)
-        .map((line) => line.replace(/^\d+\.\s*/, "").trim())
-        .filter((line) => line.length > 0)
-        .slice(0, amount);
+      console.warn(
+        "Primary JSON parsing failed, trying fallback methods:",
+        parseError
+      );
+
+      try {
+        // Strategy 2: Extract JSON array pattern from text
+        const jsonMatch = questions.match(/\[[\s\S]*?\]/);
+        if (jsonMatch) {
+          parsedQuestions = JSON.parse(jsonMatch[0]);
+          if (!Array.isArray(parsedQuestions)) throw new Error("Not an array");
+          parsedQuestions = parsedQuestions.filter(
+            (q) => typeof q === "string" && q.trim().length > 0
+          );
+        } else {
+          throw new Error("No JSON array found");
+        }
+      } catch (secondaryParseError) {
+        console.warn(
+          "Secondary JSON parsing failed, using text extraction:",
+          secondaryParseError
+        );
+
+        // Strategy 3: Text-based extraction
+        parsedQuestions = questions
+          .split("\n")
+          .map((line) => line.trim())
+          .filter((line) => line.length > 10)
+          .map((line) => {
+            // Remove numbering, quotes, and markdown
+            return line
+              .replace(/^\d+\.\s*/, "")
+              .replace(/^[-*]\s*/, "")
+              .replace(/^["'`]/, "")
+              .replace(/["'`]$/, "")
+              .trim();
+          })
+          .filter((q) => q.length > 10 && q.includes("?"))
+          .slice(0, amount);
+      }
     }
 
-    // Final validation
+    // Final validation of questions
     if (!parsedQuestions || parsedQuestions.length === 0) {
+      console.error(
+        "Failed to extract any valid questions from AI response:",
+        questions
+      );
       return Response.json(
         {
           success: false,
-          error: "Failed to generate questions",
+          error:
+            "Failed to generate valid interview questions. Please try again.",
+          debug:
+            process.env.NODE_ENV === "development"
+              ? { originalResponse: questions }
+              : undefined,
         },
         { status: 500 }
+      );
+    }
+
+    // Ensure we have the right number of questions
+    if (parsedQuestions.length > amount * 1.5) {
+      parsedQuestions = parsedQuestions.slice(0, amount);
+    } else if (parsedQuestions.length < Math.max(1, amount * 0.5)) {
+      console.warn(
+        `Generated ${parsedQuestions.length} questions but expected around ${amount}`
       );
     }
 
@@ -260,11 +316,15 @@ export async function POST(request: Request) {
     const docRef = db.collection("interviews").doc();
     await docRef.set(interviewData);
 
+    // Increment usage after successful creation
+    await incrementUsage(userId, "interview");
+
     return Response.json({
       success: true,
       interviewId: docRef.id,
       questions: parsedQuestions,
       isPersonalized,
+      questionsGenerated: parsedQuestions.length,
     });
   } catch (error) {
     console.error("Error generating interview:", error);
@@ -272,6 +332,12 @@ export async function POST(request: Request) {
       {
         success: false,
         error: "An error occurred while generating the interview",
+        details:
+          process.env.NODE_ENV === "development"
+            ? error instanceof Error
+              ? error.message
+              : String(error)
+            : undefined,
       },
       { status: 500 }
     );

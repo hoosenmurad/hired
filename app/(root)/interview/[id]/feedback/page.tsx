@@ -9,10 +9,19 @@ import {
 } from "@/lib/actions/general.action";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/actions/auth.action";
+import { AlertTriangle, RefreshCw } from "lucide-react";
 
-const Feedback = async ({ params }: RouteParams) => {
+const Feedback = async ({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ error?: string }>;
+}) => {
   const { id } = await params;
   const user = await getCurrentUser();
+  const { error } = await searchParams;
+  const hasError = error === "generation_failed";
 
   if (!user) redirect("/");
 
@@ -23,6 +32,63 @@ const Feedback = async ({ params }: RouteParams) => {
     interviewId: id,
     userId: user.id,
   });
+
+  // If there's an error or no feedback, show error state
+  if (hasError || !feedback) {
+    return (
+      <section className="section-feedback">
+        <div className="flex flex-row justify-center">
+          <h1 className="text-4xl font-semibold text-white text-center">
+            Interview Completed -{" "}
+            <span className="capitalize">{interview.role}</span> Interview
+          </h1>
+        </div>
+
+        <div className="bg-gradient-to-br from-yellow-500/20 to-red-500/20 border border-yellow-500/30 rounded-2xl p-8 text-center max-w-2xl mx-auto">
+          <div className="w-16 h-16 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle className="w-8 h-8 text-yellow-400" />
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-4">
+            Feedback Generation Issue
+          </h2>
+          <p className="text-light-100 mb-6 leading-relaxed">
+            Your interview was completed successfully, but we encountered an
+            issue generating your detailed feedback. This can happen with very
+            short interviews or technical issues.
+          </p>
+
+          <div className="bg-white/5 rounded-lg p-4 mb-6 text-left">
+            <h3 className="text-white font-semibold mb-2">
+              Interview Summary:
+            </h3>
+            <p className="text-light-100 text-sm mb-2">
+              • Questions: {interview.questions?.length || 0} questions
+            </p>
+            <p className="text-light-100 text-sm mb-2">
+              • Role: {interview.role}
+            </p>
+            <p className="text-light-100 text-sm">• Type: {interview.type}</p>
+          </div>
+
+          <div className="flex gap-4 justify-center">
+            <Button asChild className="btn-primary">
+              <Link href={`/interview/${id}`}>
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Try Again
+              </Link>
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+            >
+              <Link href="/dashboard">Back to Dashboard</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="section-feedback">
@@ -141,7 +207,18 @@ const Feedback = async ({ params }: RouteParams) => {
               className="text-light-100 leading-relaxed flex items-start"
             >
               <span className="text-primary-200 mr-2 mt-1">•</span>
-              {strength}
+              <div>
+                {typeof strength === "string" ? (
+                  strength
+                ) : (
+                  <>
+                    <strong className="text-white">
+                      {(strength as any).area}:
+                    </strong>{" "}
+                    {(strength as any).description}
+                  </>
+                )}
+              </div>
             </li>
           ))}
         </ul>
@@ -149,14 +226,56 @@ const Feedback = async ({ params }: RouteParams) => {
 
       <div className="bg-[#191b1f] rounded-2xl shadow-lg p-8">
         <h3 className="text-white mb-4">Areas for Improvement</h3>
-        <ul className="space-y-2">
+        <ul className="space-y-4">
           {feedback?.areasForImprovement?.map((area, index) => (
-            <li
-              key={index}
-              className="text-light-100 leading-relaxed flex items-start"
-            >
-              <span className="text-primary-200 mr-2 mt-1">•</span>
-              {area}
+            <li key={index} className="text-light-100 leading-relaxed">
+              {typeof area === "string" ? (
+                <div>
+                  <span className="text-primary-200 mr-2">•</span>
+                  {area}
+                </div>
+              ) : (
+                <>
+                  <div className="mb-2">
+                    <span className="text-primary-200 mr-2">•</span>
+                    <strong className="text-white">
+                      {(area as any).area}:
+                    </strong>{" "}
+                    {(area as any).description}
+                    <span
+                      className={`ml-2 px-2 py-1 rounded text-xs ${
+                        (area as any).priority === "High"
+                          ? "bg-red-500/20 text-red-300"
+                          : (area as any).priority === "Medium"
+                          ? "bg-yellow-500/20 text-yellow-300"
+                          : "bg-green-500/20 text-green-300"
+                      }`}
+                    >
+                      {(area as any).priority} Priority
+                    </span>
+                  </div>
+                  {(area as any).actionableSteps &&
+                    (area as any).actionableSteps.length > 0 && (
+                      <div className="ml-6 mt-2">
+                        <p className="text-sm text-light-100/80 mb-1">
+                          Action steps:
+                        </p>
+                        <ul className="space-y-1">
+                          {(area as any).actionableSteps.map(
+                            (step: string, stepIndex: number) => (
+                              <li
+                                key={stepIndex}
+                                className="text-sm text-light-100/90"
+                              >
+                                - {step}
+                              </li>
+                            )
+                          )}
+                        </ul>
+                      </div>
+                    )}
+                </>
+              )}
             </li>
           ))}
         </ul>
