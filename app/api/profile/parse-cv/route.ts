@@ -4,6 +4,11 @@ import { google } from "@ai-sdk/google";
 import { z } from "zod";
 import { PROMPTS, validateContextLimits } from "@/lib/prompts";
 
+// Ensure Node.js runtime for Buffer and server-only APIs
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic"; // Always dynamic
+export const maxDuration = 60; // Allow up to 60s processing time
+
 const parsedCVSchema = z.object({
   name: z.string().optional(),
   summary: z.string().optional(),
@@ -31,8 +36,19 @@ const parsedCVSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    // Sanity check: required API key must exist
+    if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Server misconfiguration: missing AI API key",
+        },
+        { status: 500 }
+      );
+    }
+
     const formData = await request.formData();
-    const file = formData.get("cv") as File;
+    const file = formData.get("cv") as File | null;
 
     if (!file) {
       return NextResponse.json(
@@ -52,10 +68,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate file type
-    const isTextFile = file.type.includes("text") || file.name.endsWith(".txt");
+    // Validate file type (guard .type access)
+    const fileType = (file as unknown as { type?: string }).type || "";
+    const fileName = (file as unknown as { name?: string }).name || "";
+    const isTextFile = fileType.includes("text") || fileName.endsWith(".txt");
     const isPdfFile =
-      file.type === "application/pdf" || file.name.endsWith(".pdf");
+      fileType === "application/pdf" || fileName.endsWith(".pdf");
 
     if (!isTextFile && !isPdfFile) {
       return NextResponse.json(
@@ -68,7 +86,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let result;
+    type GenerateObjectResult<T> = { object?: T };
+    let result: GenerateObjectResult<z.infer<typeof parsedCVSchema>>;
 
     if (isPdfFile) {
       // Handle PDF files with optimized prompt
@@ -97,6 +116,8 @@ export async function POST(request: NextRequest) {
       result = await generateObject({
         model: google("gemini-2.5-flash"),
         schema: parsedCVSchema,
+        temperature: 0,
+        maxTokens: 1024,
         messages: [
           {
             role: "user",
@@ -134,7 +155,7 @@ export async function POST(request: NextRequest) {
 
       const prompt = PROMPTS.CV_PARSE_TEXT(extractedText);
 
-      // Validate context limits
+      // Validate context limits (align model key with TOKEN_LIMITS)
       const validation = validateContextLimits(prompt, "", "gemini-2.0-flash");
       if (!validation.isValid) {
         return NextResponse.json(
@@ -148,8 +169,10 @@ export async function POST(request: NextRequest) {
       }
 
       result = await generateObject({
-        model: google("gemini-2.0-flash-001"),
+        model: google("gemini-2.0-flash"), // align with token limit key
         schema: parsedCVSchema,
+        temperature: 0,
+        maxTokens: 1024,
         prompt: prompt,
       });
     }
@@ -190,11 +213,15 @@ export async function POST(request: NextRequest) {
       );
     }
   } catch (error) {
-    console.error("Error parsing CV:", error);
+    const details =
+      process.env.NODE_ENV !== "production" && error instanceof Error
+        ? error.message
+        : undefined;
     return NextResponse.json(
       {
         success: false,
         error: "An error occurred while parsing the CV",
+        ...(details ? { details } : {}),
       },
       { status: 500 }
     );
