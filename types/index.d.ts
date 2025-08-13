@@ -91,7 +91,6 @@ interface InterviewCardProps {
   userId: string;
   role: string;
   type: string;
-  specialtySkills: string[];
   createdAt: string;
   isPersonalized?: boolean;
   profileName?: string;

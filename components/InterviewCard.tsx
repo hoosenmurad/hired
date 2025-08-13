@@ -3,7 +3,6 @@ import Link from "next/link";
 import Image from "next/image";
 
 import { Button } from "./ui/button";
-import DisplayTechIcons from "./DisplayTechIcons";
 
 import { cn } from "@/lib/utils";
 import { getFeedbackByInterviewId } from "@/lib/actions/general.action";
@@ -14,7 +13,6 @@ const InterviewCard = async ({
   userId,
   role,
   type,
-  specialtySkills,
   createdAt,
   isPersonalized,
   profileName,
@@ -44,7 +42,7 @@ const InterviewCard = async ({
   ).format("MMM D, YYYY");
 
   return (
-    <div className="card-border w-full max-w-[360px] sm:w-[360px] mx-auto">
+    <div className="card-border w-full">
       <div className="card-interview">
         <div className="flex flex-col h-full">
           {/* Header Section */}
@@ -73,13 +71,6 @@ const InterviewCard = async ({
             <h3 className="text-base sm:text-lg font-semibold mb-2 line-clamp-2 leading-tight">
               {role}
             </h3>
-
-            {/* Tech Icons */}
-            {specialtySkills && (
-              <div className="mb-3">
-                <DisplayTechIcons specialtySkills={specialtySkills} />
-              </div>
-            )}
 
             {/* Date, Score & Duration */}
             <div className="flex flex-wrap gap-3 sm:gap-4 mb-3 sm:mb-4">
