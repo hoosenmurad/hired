@@ -5,15 +5,7 @@ import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/actions/auth.action";
 import { getJobTargetsByUserId } from "@/lib/actions/job-target.action";
-import {
-  Plus,
-  Briefcase,
-  Building,
-  Target,
-  Loader,
-  Eye,
-  Edit,
-} from "lucide-react";
+import { Plus, Briefcase, Building, Target, Loader } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const JobTargetsPage = () => {
@@ -169,7 +161,7 @@ const JobTargetsPage = () => {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                <div className="flex justify-center">
                   <Button
                     onClick={() =>
                       handleNavigate(
@@ -180,7 +172,7 @@ const JobTargetsPage = () => {
                       navigatingTo ===
                       `/onboarding/setup-interview?jobTargetId=${jobTarget.id}`
                     }
-                    className="flex-1 bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full font-medium px-3 sm:px-4 h-10 text-xs sm:text-sm disabled:opacity-70"
+                    className="w-full bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full font-medium px-3 sm:px-4 h-10 text-xs sm:text-sm disabled:opacity-70"
                   >
                     {navigatingTo ===
                     `/onboarding/setup-interview?jobTargetId=${jobTarget.id}` ? (
@@ -190,24 +182,6 @@ const JobTargetsPage = () => {
                     )}
                     Practice Interview
                   </Button>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 sm:flex-none bg-dark-200 text-light-100 hover:bg-dark-200/80 border-light-600/20 rounded-full h-10 px-3 sm:px-4 text-xs sm:text-sm"
-                    >
-                      <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
-                      <span className="sm:hidden">View</span>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 sm:flex-none bg-dark-200 text-light-100 hover:bg-dark-200/80 border-light-600/20 rounded-full h-10 px-3 sm:px-4 text-xs sm:text-sm"
-                    >
-                      <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
-                      <span className="sm:hidden">Edit</span>
-                    </Button>
-                  </div>
                 </div>
               </div>
             ))}
