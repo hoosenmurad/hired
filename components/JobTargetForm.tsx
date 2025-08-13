@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Upload, X, Loader, Link as LinkIcon } from "lucide-react";
+import { Upload, X, Loader } from "lucide-react";
 import { toast } from "sonner";
 import { useDropzone } from "react-dropzone";
 
@@ -47,8 +47,7 @@ const JobTargetForm = ({
   const [responsibilityInput, setResponsibilityInput] = useState("");
   const [skillInput, setSkillInput] = useState("");
   const [textInput, setTextInput] = useState("");
-  const [urlInput, setUrlInput] = useState("");
-  const [inputMode, setInputMode] = useState<"file" | "text" | "url">("file");
+  const [inputMode, setInputMode] = useState<"file" | "text">("file");
 
   const form = useForm<JobTargetFormData>({
     resolver: zodResolver(jobTargetSchema),
@@ -91,8 +90,6 @@ const JobTargetForm = ({
           return;
         }
         formData.append("textInput", textInput);
-      } else if (inputMode === "url" && urlInput.trim()) {
-        formData.append("urlInput", urlInput);
       } else {
         toast.error("Please provide a job description");
         setIsParsingJob(false);
@@ -228,7 +225,7 @@ const JobTargetForm = ({
         <div className="text-center">
           <h1 className="text-4xl font-bold text-white mb-2">Add Job Target</h1>
           <p className="text-light-100 mt-2">
-            Upload job description, paste text, link or enter manually.
+            Upload job description, paste text, or enter manually.
           </p>
         </div>
 
@@ -262,18 +259,6 @@ const JobTargetForm = ({
               }
             >
               Paste Text
-            </Button>
-            <Button
-              type="button"
-              onClick={() => setInputMode("url")}
-              className={
-                inputMode === "url"
-                  ? "bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full font-bold px-5 cursor-pointer min-h-10"
-                  : "bg-dark-200 text-primary-200 hover:bg-dark-200/80 rounded-full font-bold px-5 cursor-pointer min-h-10"
-              }
-            >
-              <LinkIcon className="h-4 w-4 mr-2" />
-              From URL
             </Button>
           </div>
 
@@ -350,33 +335,6 @@ const JobTargetForm = ({
                   </>
                 ) : (
                   "Parse Job Description"
-                )}
-              </Button>
-            </div>
-          )}
-
-          {/* URL Input */}
-          {inputMode === "url" && (
-            <div className="space-y-4">
-              <Input
-                value={urlInput}
-                onChange={(e) => setUrlInput(e.target.value)}
-                placeholder="Enter job posting URL..."
-                className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
-              />
-              <Button
-                type="button"
-                onClick={() => parseJobDescription()}
-                disabled={!urlInput.trim() || isParsingJob}
-                className="bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full font-bold px-5 cursor-pointer min-h-10 disabled:bg-light-600"
-              >
-                {isParsingJob ? (
-                  <>
-                    <Loader className="animate-spin h-4 w-4 mr-2" />
-                    Parsing...
-                  </>
-                ) : (
-                  "Parse from URL"
                 )}
               </Button>
             </div>
