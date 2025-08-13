@@ -16,19 +16,19 @@ const cvSchema = z.object({
   education: z
     .array(
       z.object({
-        degree: z.string(),
-        institution: z.string(),
-        year: z.string(),
+        degree: z.string().nullable().optional(),
+        institution: z.string().nullable().optional(),
+        year: z.string().nullable().optional(),
       })
     )
     .optional(),
   experience: z
     .array(
       z.object({
-        title: z.string(),
-        company: z.string(),
-        duration: z.string(),
-        description: z.string(),
+        title: z.string().nullable().optional(),
+        company: z.string().nullable().optional(),
+        duration: z.string().nullable().optional(),
+        description: z.string().nullable().optional(),
       })
     )
     .optional(),
@@ -339,26 +339,33 @@ export async function POST(request: NextRequest) {
     }
 
     // Clean and validate extracted data with repetition removal
-    const cleanText = (text: string): string => {
+    const cleanText = (text: string | null | undefined): string => {
       if (!text) return "";
       return cleanRepetitiveText(text);
     };
 
     const cleanedData = {
       name: validatedData.name?.trim() || null,
-      summary: cleanText(validatedData.summary || ""),
+      summary: cleanText(validatedData.summary),
       skills: (validatedData.skills || [])
-        .filter((skill) => skill.trim().length > 0)
+        .filter((skill) => skill && skill.trim().length > 0)
         .slice(0, 20),
       education: (validatedData.education || [])
-        .filter((edu) => edu.degree?.trim() && edu.institution?.trim())
+        .filter((edu) => edu && (edu.degree || edu.institution)) // Keep if has degree OR institution
+        .map((edu) => ({
+          degree: edu.degree?.trim() || "",
+          institution: edu.institution?.trim() || "",
+          year: edu.year?.trim() || "",
+        }))
         .slice(0, 5),
       experience: (validatedData.experience || [])
+        .filter((exp) => exp && (exp.title || exp.company)) // Keep if has title OR company
         .map((exp) => ({
-          ...exp,
-          description: cleanText(exp.description || ""),
+          title: exp.title?.trim() || "",
+          company: exp.company?.trim() || "",
+          duration: exp.duration?.trim() || "",
+          description: cleanText(exp.description),
         }))
-        .filter((exp) => exp.title?.trim() && exp.company?.trim())
         .slice(0, 5),
     };
 
