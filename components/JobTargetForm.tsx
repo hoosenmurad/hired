@@ -220,31 +220,34 @@ const JobTargetForm = ({
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-4 font-sans">
-      <div className="w-full max-w-4xl mx-auto space-y-8">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-white mb-2">Add Job Target</h1>
-          <p className="text-light-100 mt-2">
+    <div className="w-full">
+      <div className="w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 lg:space-y-8">
+        {/* Mobile-optimized header */}
+        <div className="text-center px-4 sm:px-0">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2 leading-tight">
+            Add Job Target
+          </h1>
+          <p className="text-light-100 mt-2 text-sm sm:text-base">
             Upload job description, paste text, or enter manually.
           </p>
         </div>
 
         {/* Job Description Upload Section */}
-        <div className="bg-[#191b1f] rounded-2xl shadow-lg p-8 space-y-6">
-          <h2 className="text-2xl font-semibold text-white">
+        <div className="bg-[#191b1f] rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
+          <h2 className="text-xl sm:text-2xl font-semibold text-white">
             Import Job Description
           </h2>
 
-          {/* Input Mode Selection */}
-          <div className="flex space-x-4">
+          {/* Input Mode Selection - Mobile optimized */}
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <Button
               type="button"
               onClick={() => setInputMode("file")}
-              className={
+              className={`flex-1 h-12 sm:h-10 ${
                 inputMode === "file"
-                  ? "bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full font-bold px-5 cursor-pointer min-h-10"
-                  : "bg-dark-200 text-primary-200 hover:bg-dark-200/80 rounded-full font-bold px-5 cursor-pointer min-h-10"
-              }
+                  ? "bg-primary-200 text-dark-100 hover:bg-primary-200/80"
+                  : "bg-dark-200 text-primary-200 hover:bg-dark-200/80"
+              } rounded-full font-bold px-5 cursor-pointer transition-colors`}
             >
               <Upload className="h-4 w-4 mr-2" />
               Upload File
@@ -252,11 +255,11 @@ const JobTargetForm = ({
             <Button
               type="button"
               onClick={() => setInputMode("text")}
-              className={
+              className={`flex-1 h-12 sm:h-10 ${
                 inputMode === "text"
-                  ? "bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full font-bold px-5 cursor-pointer min-h-10"
-                  : "bg-dark-200 text-primary-200 hover:bg-dark-200/80 rounded-full font-bold px-5 cursor-pointer min-h-10"
-              }
+                  ? "bg-primary-200 text-dark-100 hover:bg-primary-200/80"
+                  : "bg-dark-200 text-primary-200 hover:bg-dark-200/80"
+              } rounded-full font-bold px-5 cursor-pointer transition-colors`}
             >
               Paste Text
             </Button>
@@ -266,7 +269,7 @@ const JobTargetForm = ({
           {inputMode === "file" && (
             <div
               {...getRootProps()}
-              className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
+              className={`border-2 border-dashed rounded-lg sm:rounded-xl p-4 sm:p-6 lg:p-8 text-center cursor-pointer transition-colors ${
                 isDragActive
                   ? "border-primary-200 bg-dark-200"
                   : "border-light-600 hover:border-primary-200 bg-dark-200/50"
@@ -275,18 +278,20 @@ const JobTargetForm = ({
               <input {...getInputProps()} />
               {isParsingJob ? (
                 <div className="flex items-center justify-center space-x-2">
-                  <Loader className="animate-spin h-6 w-6 text-primary-200" />
-                  <span className="text-white">Parsing job description...</span>
+                  <Loader className="animate-spin h-5 w-5 sm:h-6 sm:w-6 text-primary-200" />
+                  <span className="text-white text-sm sm:text-base">
+                    Parsing job description...
+                  </span>
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <Upload className="h-8 w-8 mx-auto text-light-400" />
-                  <p className="text-lg text-white">
+                  <Upload className="h-6 w-6 sm:h-8 sm:w-8 mx-auto text-light-400" />
+                  <p className="text-base sm:text-lg text-white">
                     {isDragActive
                       ? "Drop job description here"
                       : "Drag & drop job description here, or click to select"}
                   </p>
-                  <p className="text-sm text-light-100">
+                  <p className="text-xs sm:text-sm text-light-100">
                     Supports PDF (.pdf) and text files (.txt). Maximum 10MB.
                   </p>
                 </div>
@@ -303,9 +308,9 @@ const JobTargetForm = ({
                   onChange={(e) => setTextInput(e.target.value)}
                   placeholder="Paste the job description here..."
                   rows={6}
-                  className="bg-dark-200 rounded-lg min-h-12 px-5 placeholder:text-light-100 border-none text-white resize-none"
+                  className="bg-dark-200 rounded-lg min-h-12 px-4 sm:px-5 py-3 placeholder:text-light-100 border-none text-white resize-none text-sm sm:text-base"
                 />
-                <div className="flex justify-between items-center text-sm">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs sm:text-sm">
                   <span
                     className={`${
                       textInput.length < 50
@@ -326,7 +331,7 @@ const JobTargetForm = ({
                 type="button"
                 onClick={() => parseJobDescription()}
                 disabled={textInput.length < 50 || isParsingJob}
-                className="bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full font-bold px-5 cursor-pointer min-h-10 disabled:bg-light-600 disabled:cursor-not-allowed"
+                className="w-full sm:w-auto bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full font-bold px-6 cursor-pointer h-12 disabled:bg-light-600 disabled:cursor-not-allowed"
               >
                 {isParsingJob ? (
                   <>
@@ -342,19 +347,19 @@ const JobTargetForm = ({
         </div>
 
         {/* Manual Form */}
-        <div className="bg-[#191b1f] rounded-2xl shadow-lg p-8">
+        <div className="bg-[#191b1f] rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 lg:p-8">
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(handleSubmit)}
-              className="space-y-8"
+              className="space-y-6 sm:space-y-8"
             >
               {/* Basic Information */}
-              <div className="space-y-6">
-                <h2 className="text-2xl font-semibold text-white">
+              <div className="space-y-4 sm:space-y-6">
+                <h2 className="text-xl sm:text-2xl font-semibold text-white">
                   Job Information
                 </h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:gap-6">
                   <FormField
                     control={form.control}
                     name="title"
@@ -362,7 +367,7 @@ const JobTargetForm = ({
                       <div className="space-y-2">
                         <Label
                           htmlFor="title"
-                          className="text-light-100 font-normal"
+                          className="text-light-100 font-normal text-sm sm:text-base"
                         >
                           Job Title
                         </Label>
@@ -370,7 +375,7 @@ const JobTargetForm = ({
                           <Input
                             id="title"
                             placeholder="e.g. Senior Software Engineer"
-                            className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                            className="bg-dark-200 rounded-full h-12 sm:h-14 px-4 sm:px-5 placeholder:text-light-100 border-none text-white text-sm sm:text-base"
                             {...field}
                           />
                         </FormControl>
@@ -386,7 +391,7 @@ const JobTargetForm = ({
                       <div className="space-y-2">
                         <Label
                           htmlFor="company"
-                          className="text-light-100 font-normal"
+                          className="text-light-100 font-normal text-sm sm:text-base"
                         >
                           Company
                         </Label>
@@ -394,7 +399,7 @@ const JobTargetForm = ({
                           <Input
                             id="company"
                             placeholder="e.g. Tech Corp Inc."
-                            className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                            className="bg-dark-200 rounded-full h-12 sm:h-14 px-4 sm:px-5 placeholder:text-light-100 border-none text-white text-sm sm:text-base"
                             {...field}
                           />
                         </FormControl>
@@ -403,43 +408,46 @@ const JobTargetForm = ({
                     )}
                   />
                 </div>
-
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="description"
-                        className="text-light-100 font-normal"
-                      >
-                        Job Description
-                      </Label>
-                      <FormControl>
-                        <Textarea
-                          id="description"
-                          placeholder="Brief overview of the role and what the company does"
-                          rows={4}
-                          className="bg-dark-200 rounded-lg min-h-12 px-5 placeholder:text-light-100 border-none text-white resize-none"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </div>
-                  )}
-                />
               </div>
+
+              {/* Description */}
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="description"
+                      className="text-light-100 font-normal text-sm sm:text-base"
+                    >
+                      Job Description
+                    </Label>
+                    <FormControl>
+                      <Textarea
+                        id="description"
+                        placeholder="Brief overview of the role and what the position entails..."
+                        rows={4}
+                        className="bg-dark-200 rounded-lg px-4 sm:px-5 py-3 placeholder:text-light-100 border-none text-white resize-none text-sm sm:text-base"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </div>
+                )}
+              />
 
               {/* Responsibilities */}
               <FormField
                 control={form.control}
                 name="responsibilities"
                 render={() => (
-                  <div className="space-y-6">
-                    <h2 className="text-2xl font-semibold text-white">
-                      Key Responsibilities
-                    </h2>
-                    <div className="flex gap-2">
+                  <div className="space-y-4 sm:space-y-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <h2 className="text-xl sm:text-2xl font-semibold text-white">
+                        Key Responsibilities
+                      </h2>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-3">
                       <Input
                         value={responsibilityInput}
                         onChange={(e) => setResponsibilityInput(e.target.value)}
@@ -449,33 +457,33 @@ const JobTargetForm = ({
                             handleAddResponsibility();
                           }
                         }}
-                        placeholder="Type a responsibility and press Enter"
-                        className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                        placeholder="Add a key responsibility"
+                        className="flex-1 bg-dark-200 rounded-full h-12 sm:h-14 px-4 sm:px-5 placeholder:text-light-100 border-none text-white text-sm sm:text-base"
                       />
                       <Button
                         type="button"
                         onClick={handleAddResponsibility}
                         disabled={!responsibilityInput.trim()}
-                        className="bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full font-bold px-5 cursor-pointer min-h-12"
+                        className="w-full sm:w-auto h-12 sm:h-14 bg-primary-200 text-dark-100 font-bold rounded-full hover:bg-primary-200/80 px-6 disabled:bg-light-600 disabled:cursor-not-allowed"
                       >
                         Add
                       </Button>
                     </div>
-                    <div className="space-y-2">
+                    <div className="flex flex-wrap gap-2">
                       {form
                         .watch("responsibilities")
                         .map((responsibility, index) => (
                           <div
                             key={index}
-                            className="flex items-center justify-between p-3 rounded-lg bg-dark-200/50 border border-light-600/20"
+                            className="flex items-center px-3 py-2 rounded-full bg-dark-200 text-primary-200 border border-primary-200/20 text-sm"
                           >
-                            <span className="text-white">{responsibility}</span>
+                            <span className="mr-2">{responsibility}</span>
                             <button
                               type="button"
                               onClick={() => handleRemoveResponsibility(index)}
-                              className="text-primary-200 hover:text-destructive-100"
+                              className="text-primary-200 hover:text-destructive-100 p-1"
                             >
-                              <X className="h-4 w-4" />
+                              <X className="h-3 w-3" />
                             </button>
                           </div>
                         ))}
@@ -490,11 +498,13 @@ const JobTargetForm = ({
                 control={form.control}
                 name="requiredSkills"
                 render={() => (
-                  <div className="space-y-6">
-                    <h2 className="text-2xl font-semibold text-white">
-                      Required Skills
-                    </h2>
-                    <div className="flex gap-2">
+                  <div className="space-y-4 sm:space-y-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <h2 className="text-xl sm:text-2xl font-semibold text-white">
+                        Required Skills
+                      </h2>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-3">
                       <Input
                         value={skillInput}
                         onChange={(e) => setSkillInput(e.target.value)}
@@ -504,14 +514,14 @@ const JobTargetForm = ({
                             handleAddSkill();
                           }
                         }}
-                        placeholder="Type a required skill and press Enter"
-                        className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                        placeholder="Add a required skill"
+                        className="flex-1 bg-dark-200 rounded-full h-12 sm:h-14 px-4 sm:px-5 placeholder:text-light-100 border-none text-white text-sm sm:text-base"
                       />
                       <Button
                         type="button"
                         onClick={handleAddSkill}
                         disabled={!skillInput.trim()}
-                        className="bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full font-bold px-5 cursor-pointer min-h-12"
+                        className="w-full sm:w-auto h-12 sm:h-14 bg-primary-200 text-dark-100 font-bold rounded-full hover:bg-primary-200/80 px-6 disabled:bg-light-600 disabled:cursor-not-allowed"
                       >
                         Add
                       </Button>
@@ -520,13 +530,13 @@ const JobTargetForm = ({
                       {form.watch("requiredSkills").map((skill, index) => (
                         <div
                           key={index}
-                          className="flex items-center px-3 py-1 rounded-full bg-dark-200 text-primary-200 border border-primary-200/20"
+                          className="flex items-center px-3 py-2 rounded-full bg-dark-200 text-primary-200 border border-primary-200/20 text-sm"
                         >
-                          <span>{skill}</span>
+                          <span className="mr-2">{skill}</span>
                           <button
                             type="button"
                             onClick={() => handleRemoveSkill(index)}
-                            className="ml-2 text-primary-200 hover:text-destructive-100"
+                            className="text-primary-200 hover:text-destructive-100 p-1"
                           >
                             <X className="h-3 w-3" />
                           </button>
@@ -540,7 +550,7 @@ const JobTargetForm = ({
 
               <Button
                 type="submit"
-                className="w-full bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full min-h-12 font-bold px-5 cursor-pointer"
+                className="w-full bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full h-12 sm:h-14 font-bold px-5 cursor-pointer text-sm sm:text-base"
                 disabled={loading}
               >
                 {loading ? (

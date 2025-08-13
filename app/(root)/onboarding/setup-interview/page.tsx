@@ -233,47 +233,52 @@ const InterviewSetupForm = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto py-8">
-        <div className="mb-8 text-center">
-          <div className="flex justify-center mb-4">
-            <div className="flex items-center space-x-4">
-              <div className="w-8 h-8 bg-success-100 text-dark-100 rounded-full flex items-center justify-center text-sm font-semibold">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+        <div className="mb-6 sm:mb-8 text-center">
+          {/* Mobile-optimized progress indicator */}
+          <div className="flex justify-center mb-4 sm:mb-6">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-success-100 text-dark-100 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold">
                 ✓
               </div>
-              <div className="w-16 h-1 bg-success-100"></div>
-              <div className="w-8 h-8 bg-success-100 text-dark-100 rounded-full flex items-center justify-center text-sm font-semibold">
+              <div className="w-8 sm:w-16 h-1 bg-success-100"></div>
+              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-success-100 text-dark-100 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold">
                 ✓
               </div>
-              <div className="w-16 h-1 bg-success-100"></div>
-              <div className="w-8 h-8 bg-success-100 text-dark-100 rounded-full flex items-center justify-center text-sm font-semibold">
+              <div className="w-8 sm:w-16 h-1 bg-success-100"></div>
+              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-success-100 text-dark-100 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold">
                 ✓
               </div>
-              <div className="w-16 h-1 bg-primary-200"></div>
-              <div className="w-8 h-8 bg-primary-200 text-dark-100 rounded-full flex items-center justify-center text-sm font-semibold">
+              <div className="w-8 sm:w-16 h-1 bg-primary-200"></div>
+              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-primary-200 text-dark-100 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold">
                 4
               </div>
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-white">
+          {/* Mobile-optimized heading */}
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight">
             Create Your First Interview
           </h1>
-          <p className="text-light-100 mt-2">
+          <p className="text-light-100 mt-2 text-sm sm:text-base px-4 sm:px-0">
             Customize your mock interview to match your goals
           </p>
         </div>
 
-        <div className="max-w-4xl mx-auto bg-[#191b1f] rounded-2xl shadow-lg p-8 space-y-8">
+        <div className="max-w-4xl mx-auto bg-[#191b1f] rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-4 sm:space-y-6"
+            >
               {/* Personalization Section */}
-              <div className="bg-[#27282f] rounded-lg p-6 space-y-4">
+              <div className="bg-[#27282f] rounded-lg p-4 sm:p-6 space-y-3 sm:space-y-4">
                 <div className="flex items-center space-x-2">
-                  <Sparkles className="h-5 w-5 text-primary-200" />
-                  <h3 className="text-lg font-semibold text-white">
+                  <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary-200" />
+                  <h3 className="text-base sm:text-lg font-semibold text-white">
                     Personalize Your Interview (Recommended)
                   </h3>
                 </div>
-                <p className="text-light-100 text-sm">
+                <p className="text-light-100 text-xs sm:text-sm">
                   Use your profile and job targets for questions tailored to
                   your experience and goals.
                 </p>
@@ -312,7 +317,7 @@ const InterviewSetupForm = () => {
                   </div>
                   <Label
                     htmlFor="use-personalization"
-                    className="text-white cursor-pointer"
+                    className="text-white cursor-pointer text-sm sm:text-base"
                   >
                     Use personalized interview questions
                   </Label>
@@ -320,8 +325,8 @@ const InterviewSetupForm = () => {
 
                 {/* Profile and Job Target Selection - shown when personalization is enabled */}
                 {usePersonalization && (
-                  <div className="space-y-4 mt-4 p-4 bg-dark-200/30 rounded-lg border border-light-600/10">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-4 mt-4 p-3 sm:p-4 bg-dark-200/30 rounded-lg border border-light-600/10">
+                    <div className="grid grid-cols-1 gap-4">
                       {/* Profile Selection */}
                       <FormField
                         control={form.control}
@@ -330,7 +335,7 @@ const InterviewSetupForm = () => {
                           <div className="space-y-2">
                             <Label
                               htmlFor="profile-select"
-                              className="text-light-100"
+                              className="text-light-100 text-sm sm:text-base"
                             >
                               Select Profile
                             </Label>
@@ -340,7 +345,7 @@ const InterviewSetupForm = () => {
                             >
                               <SelectTrigger
                                 id="profile-select"
-                                className="bg-dark-200 border-none rounded-full min-h-12 px-5 text-white"
+                                className="bg-dark-200 border-none rounded-full h-12 sm:h-14 px-4 sm:px-5 text-white text-sm sm:text-base"
                               >
                                 <SelectValue placeholder="Choose a profile" />
                               </SelectTrigger>
@@ -368,7 +373,7 @@ const InterviewSetupForm = () => {
                           <div className="space-y-2">
                             <Label
                               htmlFor="job-target-select"
-                              className="text-light-100"
+                              className="text-light-100 text-sm sm:text-base"
                             >
                               Select Job Target
                             </Label>
@@ -378,7 +383,7 @@ const InterviewSetupForm = () => {
                             >
                               <SelectTrigger
                                 id="job-target-select"
-                                className="bg-dark-200 border-none rounded-full min-h-12 px-5 text-white"
+                                className="bg-dark-200 border-none rounded-full h-12 sm:h-14 px-4 sm:px-5 text-white text-sm sm:text-base"
                               >
                                 <SelectValue placeholder="Choose a job target" />
                               </SelectTrigger>
@@ -390,10 +395,10 @@ const InterviewSetupForm = () => {
                                     className="focus:bg-dark-200 focus:text-white"
                                   >
                                     <div>
-                                      <div className="font-medium">
+                                      <div className="font-medium text-sm sm:text-base">
                                         {jobTarget.title}
                                       </div>
-                                      <div className="text-sm text-light-100">
+                                      <div className="text-xs sm:text-sm text-light-100">
                                         {jobTarget.company}
                                       </div>
                                     </div>
@@ -407,7 +412,7 @@ const InterviewSetupForm = () => {
                     </div>
 
                     {profiles.length === 0 && jobTargets.length === 0 && (
-                      <p className="text-light-100 text-sm text-center py-4">
+                      <p className="text-light-100 text-xs sm:text-sm text-center py-4">
                         No profiles or job targets found. Please create them
                         first in your dashboard.
                       </p>
@@ -422,7 +427,10 @@ const InterviewSetupForm = () => {
                 name="type"
                 render={({ field }) => (
                   <div className="space-y-2">
-                    <Label htmlFor="interview-type" className="text-light-100">
+                    <Label
+                      htmlFor="interview-type"
+                      className="text-light-100 text-sm sm:text-base"
+                    >
                       What type of interview would you like to practice?
                     </Label>
                     <Select
@@ -432,7 +440,7 @@ const InterviewSetupForm = () => {
                     >
                       <SelectTrigger
                         id="interview-type"
-                        className="bg-dark-200 border-none rounded-full min-h-12 px-5 text-white"
+                        className="bg-dark-200 border-none rounded-full h-12 sm:h-14 px-4 sm:px-5 text-white text-sm sm:text-base"
                       >
                         <SelectValue placeholder="Select type" />
                       </SelectTrigger>
@@ -463,21 +471,24 @@ const InterviewSetupForm = () => {
 
               {/* Show these fields only when personalization is NOT enabled */}
               {!usePersonalization && (
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   {/* Role */}
                   <FormField
                     control={form.control}
                     name="role"
                     render={({ field }) => (
                       <div className="space-y-2">
-                        <Label htmlFor="role" className="text-light-100">
+                        <Label
+                          htmlFor="role"
+                          className="text-light-100 text-sm sm:text-base"
+                        >
                           What role are you focusing on?
                         </Label>
                         <Input
                           id="role"
                           placeholder="e.g. Frontend Engineer, Analyst, Product Manager"
                           {...field}
-                          className="bg-dark-200 border-none rounded-full min-h-12 px-5 text-white placeholder:text-light-400"
+                          className="bg-dark-200 border-none rounded-full h-12 sm:h-14 px-4 sm:px-5 text-white placeholder:text-light-400 text-sm sm:text-base"
                         />
                       </div>
                     )}
@@ -489,7 +500,10 @@ const InterviewSetupForm = () => {
                     name="level"
                     render={({ field }) => (
                       <div className="space-y-2">
-                        <Label htmlFor="level" className="text-light-100">
+                        <Label
+                          htmlFor="level"
+                          className="text-light-100 text-sm sm:text-base"
+                        >
                           Experience Level
                         </Label>
                         <Select
@@ -499,7 +513,7 @@ const InterviewSetupForm = () => {
                         >
                           <SelectTrigger
                             id="level"
-                            className="bg-dark-200 border-none rounded-full min-h-12 px-5 text-white"
+                            className="bg-dark-200 border-none rounded-full h-12 sm:h-14 px-4 sm:px-5 text-white text-sm sm:text-base"
                           >
                             <SelectValue placeholder="Select level" />
                           </SelectTrigger>
@@ -546,10 +560,13 @@ const InterviewSetupForm = () => {
                     name="specialtySkills"
                     render={() => (
                       <div className="space-y-2">
-                        <Label htmlFor="tech-stack" className="text-light-100">
+                        <Label
+                          htmlFor="tech-stack"
+                          className="text-light-100 text-sm sm:text-base"
+                        >
                           What role related skills or experience do you have?
                         </Label>
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                           <Input
                             value={skillInput}
                             onChange={(e) => setSkillInput(e.target.value)}
@@ -560,13 +577,13 @@ const InterviewSetupForm = () => {
                               }
                             }}
                             placeholder="Type skill and press Enter"
-                            className="bg-dark-200 border-none rounded-full min-h-12 px-5 text-white placeholder:text-light-400"
+                            className="flex-1 bg-dark-200 border-none rounded-full h-12 sm:h-14 px-4 sm:px-5 text-white placeholder:text-light-400 text-sm sm:text-base"
                           />
                           <Button
                             type="button"
                             onClick={handleAddSkill}
                             disabled={!skillInput.trim()}
-                            className="h-12 bg-primary-200 text-dark-100 font-bold rounded-full hover:bg-primary-200/80"
+                            className="w-full sm:w-auto h-12 sm:h-14 bg-primary-200 text-dark-100 font-bold rounded-full hover:bg-primary-200/80 px-6"
                           >
                             Add
                           </Button>
@@ -576,13 +593,13 @@ const InterviewSetupForm = () => {
                             (skill, i) => (
                               <div
                                 key={i}
-                                className="flex items-center px-3 py-1 rounded-full bg-dark-200/50 text-white"
+                                className="flex items-center px-3 py-2 rounded-full bg-dark-200/50 text-white text-sm"
                               >
                                 <span>{skill}</span>
                                 <button
                                   type="button"
                                   onClick={() => handleRemoveSkill(skill)}
-                                  className="ml-2 text-primary-200 hover:text-red-400"
+                                  className="ml-2 text-primary-200 hover:text-red-400 p-1"
                                   aria-label={`Remove ${skill}`}
                                 >
                                   <X className="h-3 w-3" />
@@ -601,14 +618,14 @@ const InterviewSetupForm = () => {
               {usePersonalization &&
                 profiles.length > 0 &&
                 jobTargets.length > 0 && (
-                  <div className="bg-dark-200/30 rounded-lg p-4 space-y-3 border border-light-600/10">
+                  <div className="bg-dark-200/30 rounded-lg p-3 sm:p-4 space-y-3 border border-light-600/10">
                     <div className="flex items-center space-x-2">
-                      <Sparkles className="h-5 w-5 text-primary-200" />
-                      <h4 className="font-semibold text-white">
+                      <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary-200" />
+                      <h4 className="font-semibold text-white text-sm sm:text-base">
                         Interview Settings
                       </h4>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                    <div className="grid grid-cols-1 gap-2 sm:gap-3 text-xs sm:text-sm">
                       <div>
                         <span className="text-light-400">Role:</span>
                         <span className="text-white ml-2">
@@ -653,14 +670,17 @@ const InterviewSetupForm = () => {
                 )}
 
               {/* Interview Configuration */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:gap-6">
                 {/* Number of Questions */}
                 <FormField
                   control={form.control}
                   name="amount"
                   render={({ field }) => (
                     <div className="space-y-2">
-                      <Label htmlFor="duration" className="text-light-100">
+                      <Label
+                        htmlFor="duration"
+                        className="text-light-100 text-sm sm:text-base"
+                      >
                         How many questions? (2 mins each)
                       </Label>
                       <Select
@@ -670,7 +690,7 @@ const InterviewSetupForm = () => {
                       >
                         <SelectTrigger
                           id="duration"
-                          className="bg-dark-200 border-none rounded-full min-h-12 px-5 text-white"
+                          className="bg-dark-200 border-none rounded-full h-12 sm:h-14 px-4 sm:px-5 text-white text-sm sm:text-base"
                         >
                           <SelectValue placeholder="Select number" />
                         </SelectTrigger>
@@ -696,7 +716,10 @@ const InterviewSetupForm = () => {
                   name="tone"
                   render={({ field }) => (
                     <div className="space-y-2">
-                      <Label htmlFor="tone" className="text-light-100">
+                      <Label
+                        htmlFor="tone"
+                        className="text-light-100 text-sm sm:text-base"
+                      >
                         Interview Tone
                       </Label>
                       <Select
@@ -706,7 +729,7 @@ const InterviewSetupForm = () => {
                       >
                         <SelectTrigger
                           id="tone"
-                          className="bg-dark-200 border-none rounded-full min-h-12 px-5 text-white"
+                          className="bg-dark-200 border-none rounded-full h-12 sm:h-14 px-4 sm:px-5 text-white text-sm sm:text-base"
                         >
                           <SelectValue placeholder="Select tone" />
                         </SelectTrigger>
@@ -742,7 +765,10 @@ const InterviewSetupForm = () => {
                 name="difficulty"
                 render={({ field }) => (
                   <div className="space-y-2">
-                    <Label htmlFor="difficulty" className="text-light-100">
+                    <Label
+                      htmlFor="difficulty"
+                      className="text-light-100 text-sm sm:text-base"
+                    >
                       Interview Difficulty
                     </Label>
                     <Select
@@ -752,7 +778,7 @@ const InterviewSetupForm = () => {
                     >
                       <SelectTrigger
                         id="difficulty"
-                        className="bg-dark-200 border-none rounded-full min-h-12 px-5 text-white"
+                        className="bg-dark-200 border-none rounded-full h-12 sm:h-14 px-4 sm:px-5 text-white text-sm sm:text-base"
                       >
                         <SelectValue placeholder="Select difficulty" />
                       </SelectTrigger>
@@ -783,15 +809,18 @@ const InterviewSetupForm = () => {
 
               {/* Profile Picture Upload */}
               <div className="space-y-2">
-                <Label htmlFor="profile-picture" className="text-light-100">
+                <Label
+                  htmlFor="profile-picture"
+                  className="text-light-100 text-sm sm:text-base"
+                >
                   Profile picture
                 </Label>
                 <Label
                   htmlFor="file-upload"
-                  className="flex items-center justify-center w-full h-12 px-4 bg-dark-200 border-none rounded-full cursor-pointer hover:bg-dark-200/80"
+                  className="flex items-center justify-center w-full h-12 sm:h-14 px-4 bg-dark-200 border-none rounded-full cursor-pointer hover:bg-dark-200/80"
                 >
-                  <Upload className="h-5 w-5 mr-2 text-light-400" />
-                  <span className="text-light-400">
+                  <Upload className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-light-400" />
+                  <span className="text-light-400 text-sm sm:text-base">
                     Upload an image (optional)
                   </span>
                 </Label>
@@ -815,7 +844,7 @@ const InterviewSetupForm = () => {
 
               <Button
                 type="submit"
-                className="w-full bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full min-h-12 font-bold px-5 cursor-pointer"
+                className="w-full bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full h-12 sm:h-14 font-bold px-5 cursor-pointer text-sm sm:text-base"
                 disabled={loading}
               >
                 {loading ? (
