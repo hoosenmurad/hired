@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { toast } from "sonner";
@@ -64,7 +64,8 @@ const formSchema = z
     }
   );
 
-const InterviewSetupPage = () => {
+// Inner component that uses useSearchParams
+const InterviewSetupForm = () => {
   const { user } = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -831,6 +832,55 @@ const InterviewSetupPage = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+// Loading component for Suspense fallback
+const InterviewSetupLoading = () => {
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto py-8">
+        <div className="mb-8 text-center">
+          <div className="flex justify-center mb-4">
+            <div className="flex items-center space-x-4">
+              <div className="w-8 h-8 bg-success-100 text-dark-100 rounded-full flex items-center justify-center text-sm font-semibold">
+                ✓
+              </div>
+              <div className="w-16 h-1 bg-success-100"></div>
+              <div className="w-8 h-8 bg-success-100 text-dark-100 rounded-full flex items-center justify-center text-sm font-semibold">
+                ✓
+              </div>
+              <div className="w-16 h-1 bg-success-100"></div>
+              <div className="w-8 h-8 bg-success-100 text-dark-100 rounded-full flex items-center justify-center text-sm font-semibold">
+                ✓
+              </div>
+              <div className="w-16 h-1 bg-primary-200"></div>
+              <div className="w-8 h-8 bg-primary-200 text-dark-100 rounded-full flex items-center justify-center text-sm font-semibold">
+                4
+              </div>
+            </div>
+          </div>
+          <h1 className="text-3xl font-bold text-white">
+            Create Your First Interview
+          </h1>
+          <p className="text-light-100 mt-2">Loading interview setup...</p>
+        </div>
+        <div className="max-w-4xl mx-auto bg-[#191b1f] rounded-2xl shadow-lg p-8 space-y-8">
+          <div className="flex items-center justify-center py-12">
+            <Loader className="animate-spin h-8 w-8 text-primary-200" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Main page component with Suspense wrapper
+const InterviewSetupPage = () => {
+  return (
+    <Suspense fallback={<InterviewSetupLoading />}>
+      <InterviewSetupForm />
+    </Suspense>
   );
 };
 
