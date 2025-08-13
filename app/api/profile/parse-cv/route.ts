@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateObject } from "ai";
+import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
 import { z } from "zod";
-import { PROMPTS, validateContextLimits } from "@/lib/prompts";
 
 // Ensure Node.js runtime for Buffer and server-only APIs
 export const runtime = "nodejs";
-export const dynamic = "force-dynamic"; // Always dynamic
-export const maxDuration = 60; // Allow up to 60s processing time
+export const dynamic = "force-dynamic";
+export const maxDuration = 30; // Reduced timeout
 
-const parsedCVSchema = z.object({
+// Comprehensive CV schema
+const cvSchema = z.object({
   name: z.string().optional(),
   summary: z.string().optional(),
   skills: z.array(z.string()).optional(),
@@ -34,15 +34,202 @@ const parsedCVSchema = z.object({
     .optional(),
 });
 
+// Helper function to clean repetitive text
+const cleanRepetitiveText = (text: string): string => {
+  if (!text) return "";
+
+  // Split into sentences
+  const sentences = text
+    .split(/[.!?]+/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 10);
+
+  // Remove duplicates while preserving order
+  const uniqueSentences = [];
+  const seen = new Set();
+
+  for (const sentence of sentences) {
+    const normalized = sentence.toLowerCase().replace(/\s+/g, " ");
+    if (!seen.has(normalized) && uniqueSentences.length < 3) {
+      seen.add(normalized);
+      uniqueSentences.push(sentence);
+    }
+  }
+
+  return uniqueSentences.join(". ") + (uniqueSentences.length > 0 ? "." : "");
+};
+
+// Helper function to parse and clean JSON response
+const parseAndCleanResponse = (jsonText: string): z.infer<typeof cvSchema> => {
+  try {
+    // First, try to clean obvious repetition patterns
+    let cleanedText = jsonText;
+
+    // Remove markdown code block wrappers
+    cleanedText = cleanedText
+      .replace(/```json\s*/g, "")
+      .replace(/```\s*$/g, "");
+    cleanedText = cleanedText.trim();
+
+    // Find and fix repetitive summary field
+    const summaryMatch = cleanedText.match(/"summary":\s*"([^"]*)/);
+    if (summaryMatch) {
+      const originalSummary = summaryMatch[1];
+      const cleanedSummary = cleanRepetitiveText(originalSummary);
+      cleanedText = cleanedText.replace(
+        /"summary":\s*"[^"]*"/,
+        `"summary": "${cleanedSummary}"`
+      );
+    }
+
+    // Ensure proper JSON closure
+    if (!cleanedText.trim().endsWith("}")) {
+      const lastBraceIndex = cleanedText.lastIndexOf("}");
+      if (lastBraceIndex > 0) {
+        cleanedText = cleanedText.substring(0, lastBraceIndex + 1);
+      } else {
+        cleanedText += "}";
+      }
+    }
+
+    return JSON.parse(cleanedText);
+  } catch (error) {
+    console.error("JSON parsing failed, attempting repair:", error);
+
+    // Enhanced extraction for all fields
+    const extractField = (field: string): string | null => {
+      const match = jsonText.match(new RegExp(`"${field}":\\s*"([^"]*)"`, "i"));
+      return match ? cleanRepetitiveText(match[1]) : null;
+    };
+
+    const extractSkillsArray = (): string[] => {
+      const match = jsonText.match(/"skills":\s*\[([\s\S]*?)\]/i);
+      if (!match) return [];
+
+      try {
+        // Extract individual skill strings from the array content
+        const arrayContent = match[1];
+        const skills = arrayContent.match(/"([^"]+)"/g);
+        return skills ? skills.map((skill) => skill.replace(/"/g, "")) : [];
+      } catch {
+        return [];
+      }
+    };
+
+    const extractEducationArray = (): Array<{
+      degree: string;
+      institution: string;
+      year: string;
+    }> => {
+      const match = jsonText.match(/"education":\s*\[([\s\S]*?)\]/i);
+      if (!match) return [];
+
+      try {
+        const arrayContent = match[1];
+        // Look for education objects
+        const eduMatches = arrayContent.match(/\{[^}]*\}/g);
+        if (!eduMatches) return [];
+
+        return eduMatches
+          .map((eduStr) => {
+            const degree = eduStr.match(/"degree":\s*"([^"]*)"/)?.[1] || "";
+            const institution =
+              eduStr.match(/"institution":\s*"([^"]*)"/)?.[1] || "";
+            const year = eduStr.match(/"year":\s*"([^"]*)"/)?.[1] || "";
+            return { degree, institution, year };
+          })
+          .filter((edu) => edu.degree && edu.institution);
+      } catch {
+        return [];
+      }
+    };
+
+    const extractExperienceArray = (): Array<{
+      title: string;
+      company: string;
+      duration: string;
+      description: string;
+    }> => {
+      const match = jsonText.match(/"experience":\s*\[([\s\S]*?)\]/i);
+      if (!match) return [];
+
+      try {
+        const arrayContent = match[1];
+        // Look for experience objects
+        const expMatches = arrayContent.match(/\{[^}]*\}/g);
+        if (!expMatches) return [];
+
+        return expMatches
+          .map((expStr) => {
+            const title = expStr.match(/"title":\s*"([^"]*)"/)?.[1] || "";
+            const company = expStr.match(/"company":\s*"([^"]*)"/)?.[1] || "";
+            const duration = expStr.match(/"duration":\s*"([^"]*)"/)?.[1] || "";
+            const description =
+              expStr.match(/"description":\s*"([^"]*)"/)?.[1] || "";
+            return {
+              title,
+              company,
+              duration,
+              description: cleanRepetitiveText(description),
+            };
+          })
+          .filter((exp) => exp.title && exp.company);
+      } catch {
+        return [];
+      }
+    };
+
+    return {
+      name: extractField("name") || undefined,
+      summary: extractField("summary") || undefined,
+      skills: extractSkillsArray(),
+      education: extractEducationArray(),
+      experience: extractExperienceArray(),
+    };
+  }
+};
+
+// Optimized prompt for consistent extraction
+const CV_EXTRACTION_PROMPT = `Extract information from this CV/resume and return as JSON:
+
+{
+  "name": "Full name of the person",
+  "summary": "Brief professional summary - maximum 3 sentences, no repetition",
+  "skills": ["skill1", "skill2", "skill3"],
+  "education": [
+    {
+      "degree": "Degree name",
+      "institution": "School/University name", 
+      "year": "Graduation year"
+    }
+  ],
+  "experience": [
+    {
+      "title": "Job title",
+      "company": "Company name",
+      "duration": "Employment period",
+      "description": "Brief job description - maximum 2 sentences"
+    }
+  ]
+}
+
+CRITICAL RULES:
+- Return ONLY valid JSON
+- Summary: maximum 3 sentences, NO repetition
+- Descriptions: maximum 2 sentences each
+- Extract ALL skills mentioned
+- Include ALL education entries
+- Include ALL work experience
+- If information is missing, use empty arrays []
+- Do NOT repeat text or sentences
+- Keep all text concise and professional`;
+
 export async function POST(request: NextRequest) {
   try {
-    // Sanity check: required API key must exist
+    // Validate API key
     if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
       return NextResponse.json(
-        {
-          success: false,
-          error: "Server misconfiguration: missing AI API key",
-        },
+        { success: false, error: "API configuration error" },
         { status: 500 }
       );
     }
@@ -52,79 +239,49 @@ export async function POST(request: NextRequest) {
 
     if (!file) {
       return NextResponse.json(
-        { success: false, error: "No CV file uploaded" },
+        { success: false, error: "No file uploaded" },
         { status: 400 }
       );
     }
 
-    // Validate file size (max 10MB for PDF/text files)
+    // File validation
     if (file.size > 10 * 1024 * 1024) {
       return NextResponse.json(
-        {
-          success: false,
-          error: "File size too large. Please upload a file smaller than 10MB.",
-        },
+        { success: false, error: "File too large (max 10MB)" },
         { status: 400 }
       );
     }
 
-    // Validate file type (guard .type access)
-    const fileType = (file as unknown as { type?: string }).type || "";
-    const fileName = (file as unknown as { name?: string }).name || "";
-    const isTextFile = fileType.includes("text") || fileName.endsWith(".txt");
+    const fileName = file.name?.toLowerCase() || "";
+    const isTextFile = fileName.endsWith(".txt") || file.type?.includes("text");
     const isPdfFile =
-      fileType === "application/pdf" || fileName.endsWith(".pdf");
+      fileName.endsWith(".pdf") || file.type === "application/pdf";
 
     if (!isTextFile && !isPdfFile) {
       return NextResponse.json(
-        {
-          success: false,
-          error:
-            "Unsupported file type. Please upload a text file (.txt) or PDF file (.pdf).",
-        },
+        { success: false, error: "Only PDF and text files are supported" },
         { status: 400 }
       );
     }
 
-    type GenerateObjectResult<T> = { object?: T };
-    let result: GenerateObjectResult<z.infer<typeof parsedCVSchema>>;
+    console.log(`Processing ${isPdfFile ? "PDF" : "text"} file: ${fileName}`);
+
+    let rawResponse;
 
     if (isPdfFile) {
-      // Handle PDF files with optimized prompt
+      // PDF Processing with Gemini 2.0 Flash - using generateText for more control
       const arrayBuffer = await file.arrayBuffer();
       const base64Data = Buffer.from(arrayBuffer).toString("base64");
 
-      const prompt = PROMPTS.CV_PARSE_PDF();
-
-      // Validate context limits for PDF + prompt
-      const validation = validateContextLimits(
-        prompt,
-        base64Data,
-        "gemini-2.5-flash"
-      );
-      if (!validation.isValid) {
-        return NextResponse.json(
-          {
-            success: false,
-            error:
-              "CV file is too large to process. Please use a smaller file or convert to text.",
-          },
-          { status: 400 }
-        );
-      }
-
-      result = await generateObject({
-        model: google("gemini-2.5-flash"),
-        schema: parsedCVSchema,
-        temperature: 0,
-        maxTokens: 1024,
+      const result = await generateText({
+        model: google("gemini-2.0-flash-001"),
         messages: [
           {
             role: "user",
             content: [
               {
                 type: "text",
-                text: prompt,
+                text: CV_EXTRACTION_PROMPT,
               },
               {
                 type: "file",
@@ -134,94 +291,91 @@ export async function POST(request: NextRequest) {
             ],
           },
         ],
-      });
-    } else {
-      // Handle text files with optimized prompt and truncation
-      const arrayBuffer = await file.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      const extractedText = buffer.toString("utf-8");
-
-      // Validate extracted text
-      if (!extractedText || extractedText.trim().length < 50) {
-        return NextResponse.json(
-          {
-            success: false,
-            error:
-              "The file appears to be empty or too short to parse. Please upload a proper CV with at least 50 characters.",
-          },
-          { status: 400 }
-        );
-      }
-
-      const prompt = PROMPTS.CV_PARSE_TEXT(extractedText);
-
-      // Validate context limits (align model key with TOKEN_LIMITS)
-      const validation = validateContextLimits(prompt, "", "gemini-2.0-flash");
-      if (!validation.isValid) {
-        return NextResponse.json(
-          {
-            success: false,
-            error:
-              "CV text is too long to process. Please shorten the content.",
-          },
-          { status: 400 }
-        );
-      }
-
-      result = await generateObject({
-        model: google("gemini-2.0-flash"), // align with token limit key
-        schema: parsedCVSchema,
-        temperature: 0,
         maxTokens: 1024,
-        prompt: prompt,
+        temperature: 0,
       });
+
+      rawResponse = result.text;
+    } else {
+      // Text Processing with Gemini 2.0 Flash
+      const arrayBuffer = await file.arrayBuffer();
+      const textContent = Buffer.from(arrayBuffer).toString("utf-8");
+
+      if (textContent.trim().length < 50) {
+        return NextResponse.json(
+          { success: false, error: "File content too short" },
+          { status: 400 }
+        );
+      }
+
+      const result = await generateText({
+        model: google("gemini-2.0-flash-001"),
+        prompt: `${CV_EXTRACTION_PROMPT}\n\nCV Content:\n${textContent}`,
+        maxTokens: 1024,
+        temperature: 0,
+      });
+
+      rawResponse = result.text;
     }
 
-    // Additional safety check and cleaning
-    if (result.object) {
-      // Clean all string fields recursively
-      const cleanObject = (obj: unknown): unknown => {
-        if (typeof obj === "string") {
-          return obj.replace(/\n+/g, " ").replace(/\s+/g, " ").trim();
-        }
-        if (Array.isArray(obj)) {
-          return obj.map(cleanObject);
-        }
-        if (obj && typeof obj === "object") {
-          const cleaned: Record<string, unknown> = {};
-          for (const [key, value] of Object.entries(obj)) {
-            cleaned[key] = cleanObject(value);
-          }
-          return cleaned;
-        }
-        return obj;
-      };
+    console.log(
+      "Raw AI response (first 500 chars):",
+      rawResponse.substring(0, 500)
+    );
 
-      const cleanedResult = cleanObject(result.object);
+    // Parse and clean the response
+    const parsedData = parseAndCleanResponse(rawResponse);
 
-      return NextResponse.json({
-        success: true,
-        data: cleanedResult,
-      });
-    } else {
+    // Validate with schema
+    const validatedData = cvSchema.parse(parsedData);
+
+    console.log("Parsed and validated data:", validatedData);
+
+    if (!validatedData) {
       return NextResponse.json(
-        {
-          success: false,
-          error: "Failed to extract structured data from CV",
-        },
-        { status: 400 }
+        { success: false, error: "Failed to extract CV data" },
+        { status: 500 }
       );
     }
+
+    // Clean and validate extracted data with repetition removal
+    const cleanText = (text: string): string => {
+      if (!text) return "";
+      return cleanRepetitiveText(text);
+    };
+
+    const cleanedData = {
+      name: validatedData.name?.trim() || null,
+      summary: cleanText(validatedData.summary || ""),
+      skills: (validatedData.skills || [])
+        .filter((skill) => skill.trim().length > 0)
+        .slice(0, 20),
+      education: (validatedData.education || [])
+        .filter((edu) => edu.degree?.trim() && edu.institution?.trim())
+        .slice(0, 5),
+      experience: (validatedData.experience || [])
+        .map((exp) => ({
+          ...exp,
+          description: cleanText(exp.description || ""),
+        }))
+        .filter((exp) => exp.title?.trim() && exp.company?.trim())
+        .slice(0, 5),
+    };
+
+    console.log("Final cleaned data:", cleanedData);
+
+    return NextResponse.json({
+      success: true,
+      data: cleanedData,
+    });
   } catch (error) {
-    const details =
-      process.env.NODE_ENV !== "production" && error instanceof Error
-        ? error.message
-        : undefined;
+    console.error("CV parsing error:", error);
+
     return NextResponse.json(
       {
         success: false,
-        error: "An error occurred while parsing the CV",
-        ...(details ? { details } : {}),
+        error: "Failed to parse CV",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );

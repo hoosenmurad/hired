@@ -98,7 +98,22 @@ const ProfileForm = ({
     const file = acceptedFiles[0];
     if (!file) return;
 
+    // Validate file before upload
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      toast.error("File is too large. Please upload a file smaller than 10MB.");
+      return;
+    }
+
+    const fileName = file.name.toLowerCase();
+    const isValidFile = fileName.endsWith(".pdf") || fileName.endsWith(".txt");
+    if (!isValidFile) {
+      toast.error("Please upload a PDF or text file only.");
+      return;
+    }
+
     setIsParsingCV(true);
+
     try {
       const formData = new FormData();
       formData.append("cv", file);
@@ -108,58 +123,105 @@ const ProfileForm = ({
         body: formData,
       });
 
-      // Check if response is ok first
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      // Check if response is JSON
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("Server returned non-JSON response");
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Server error: ${response.status}`);
       }
 
       const result = await response.json();
 
       if (result.success && result.data) {
-        const parsedData = result.data as ParsedCV;
+        const parsedData = result.data;
 
-        // Populate form with parsed data
-        if (parsedData.name) form.setValue("name", parsedData.name);
-        if (parsedData.summary) form.setValue("summary", parsedData.summary);
+        // Clear form first to ensure clean state
+        form.reset();
+
+        // Populate basic information
+        if (parsedData.name) {
+          form.setValue("name", parsedData.name);
+        }
+
+        if (parsedData.summary) {
+          form.setValue("summary", parsedData.summary);
+        }
+
+        // Populate skills
         if (parsedData.skills && parsedData.skills.length > 0) {
           form.setValue("skills", parsedData.skills);
         }
+
+        // Populate education
         if (parsedData.education && parsedData.education.length > 0) {
-          form.setValue("education", parsedData.education);
-        }
-        if (parsedData.experience && parsedData.experience.length > 0) {
-          form.setValue("experience", parsedData.experience);
+          // Clear existing education fields
+          educationFields.forEach((_, index) => removeEducation(index));
+
+          // Add new education entries
+          parsedData.education.forEach(
+            (edu: { degree: string; institution: string; year: string }) => {
+              appendEducation(edu);
+            }
+          );
+        } else {
+          // Ensure at least one empty education field
+          form.setValue("education", [
+            { degree: "", institution: "", year: "" },
+          ]);
         }
 
+        // Populate experience
+        if (parsedData.experience && parsedData.experience.length > 0) {
+          // Clear existing experience fields
+          experienceFields.forEach((_, index) => removeExperience(index));
+
+          // Add new experience entries
+          parsedData.experience.forEach(
+            (exp: {
+              title: string;
+              company: string;
+              duration: string;
+              description: string;
+            }) => {
+              appendExperience(exp);
+            }
+          );
+        } else {
+          // Ensure at least one empty experience field
+          form.setValue("experience", [
+            { title: "", company: "", duration: "", description: "" },
+          ]);
+        }
+
+        // Force form to re-render with new values
+        form.trigger();
+
+        const extractedCount =
+          (parsedData.name ? 1 : 0) +
+          (parsedData.summary ? 1 : 0) +
+          (parsedData.skills?.length || 0) +
+          (parsedData.education?.length || 0) +
+          (parsedData.experience?.length || 0);
+
         toast.success(
-          "CV parsed successfully! Please review and edit the extracted information."
+          `CV parsed successfully! Extracted ${extractedCount} pieces of information. Please review and edit as needed.`
         );
       } else {
         toast.error(result.error || "Failed to parse CV");
       }
     } catch (error) {
-      console.error("Error parsing CV:", error);
+      console.error("CV parsing error:", error);
 
       if (error instanceof Error) {
-        if (error.message.includes("HTTP error")) {
-          toast.error("Server error while parsing CV. Please try again.");
-        } else if (error.message.includes("non-JSON")) {
-          toast.error("Server configuration error. Please contact support.");
-        } else if (error.message.includes("JSON")) {
-          toast.error("Invalid response from server. Please try again.");
+        if (error.message.includes("Server error")) {
+          toast.error("Server error. Please try again in a moment.");
+        } else if (error.message.includes("too large")) {
+          toast.error("File is too large. Please use a smaller file.");
+        } else if (error.message.includes("Network")) {
+          toast.error("Network error. Please check your connection.");
         } else {
-          toast.error(
-            "Failed to parse CV. Please check your file and try again."
-          );
+          toast.error(`Error: ${error.message}`);
         }
       } else {
-        toast.error("Failed to parse CV. Please try again.");
+        toast.error("An unexpected error occurred. Please try again.");
       }
     } finally {
       setIsParsingCV(false);

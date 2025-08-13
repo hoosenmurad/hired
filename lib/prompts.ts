@@ -140,35 +140,35 @@ RULES:
   },
 
   // 2. CV Parsing (Ultra optimized)
-  CV_PARSE_PDF: () => `Extract CV data as JSON:
+  CV_PARSE_PDF: () => `Extract CV data as JSON with this structure:
 
-FIELDS:
-- name: string
-- summary: string (max 2 sentences)
-- skills: string[] (top 15)
-- education: {degree, institution, year}[]
-- experience: {title, company, duration, description}[] (max 5 recent)
+{
+  "name": "Full Name",
+  "summary": "Brief summary (max 2 sentences)",
+  "skills": ["skill1", "skill2"],
+  "education": [{"degree": "Degree", "institution": "School", "year": "Year"}],
+  "experience": [{"title": "Job Title", "company": "Company", "duration": "Dates", "description": "Description"}]
+}
 
-RULES:
-• Concise descriptions only
-• Remove formatting artifacts
-• Professional language
-• Skip unclear data`,
+Return only valid JSON. Extract all information found.`,
 
   CV_PARSE_TEXT: (text: string) => {
     const truncatedText = truncateText(text, 8000); // ~2000 tokens for input
 
-    return `Parse CV and extract structured data:
+    return `Extract CV data as JSON:
 
 ${truncatedText}
 
-Extract:
-• name, summary (brief)
-• skills array (technical + soft)
-• education array
-• experience array (recent 5)
+Return JSON with this structure:
+{
+  "name": "Full Name",
+  "summary": "Brief summary (max 2 sentences)",
+  "skills": ["skill1", "skill2"],
+  "education": [{"degree": "Degree", "institution": "School", "year": "Year"}],
+  "experience": [{"title": "Job Title", "company": "Company", "duration": "Dates", "description": "Description"}]
+}
 
-Format: Clean JSON only.`;
+Extract all available information.`;
   },
 
   // 3. Job Description Parsing (Optimized)
