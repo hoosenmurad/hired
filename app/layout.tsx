@@ -14,6 +14,19 @@ const monaSans = Mona_Sans({
 export const metadata: Metadata = {
   title: "HiredAI",
   description: "An AI-powered platform for preparing for mock interviews",
+  icons: {
+    icon: [
+      {
+        url: "/favicon.svg",
+        type: "image/svg+xml",
+      },
+      {
+        url: "/favicon.ico",
+        sizes: "32x32",
+        type: "image/x-icon",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
