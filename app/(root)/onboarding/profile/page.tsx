@@ -41,29 +41,34 @@ const ProfileCreationPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto py-8">
-        <div className="mb-8 text-center">
-          <div className="flex justify-center mb-4">
-            <div className="flex items-center space-x-4">
-              <div className="w-8 h-8 bg-primary-200 text-dark-100 rounded-full flex items-center justify-center text-sm font-semibold">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+        <div className="mb-6 sm:mb-8 text-center">
+          {/* Mobile-optimized progress indicator */}
+          <div className="flex justify-center mb-4 sm:mb-6">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-primary-200 text-dark-100 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold">
                 1
               </div>
-              <div className="w-16 h-1 bg-primary-200"></div>
-              <div className="w-8 h-8 bg-light-600 text-light-100 rounded-full flex items-center justify-center text-sm font-semibold">
+              <div className="w-8 sm:w-16 h-1 bg-primary-200"></div>
+              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-light-600 text-light-100 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold">
                 2
               </div>
-              <div className="w-16 h-1 bg-light-600"></div>
-              <div className="w-8 h-8 bg-light-600 text-light-100 rounded-full flex items-center justify-center text-sm font-semibold">
+              <div className="w-8 sm:w-16 h-1 bg-light-600"></div>
+              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-light-600 text-light-100 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold">
                 3
               </div>
-              <div className="w-16 h-1 bg-light-600"></div>
-              <div className="w-8 h-8 bg-light-600 text-light-100 rounded-full flex items-center justify-center text-sm font-semibold">
+              <div className="w-8 sm:w-16 h-1 bg-light-600"></div>
+              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-light-600 text-light-100 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold">
                 4
               </div>
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-white">Welcome to HiredAI</h1>
-          <p className="text-light-100 mt-2">
+
+          {/* Mobile-optimized heading */}
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight">
+            Welcome to HiredAI
+          </h1>
+          <p className="text-light-100 mt-2 text-sm sm:text-base px-4 sm:px-0">
             Let&apos;s start by creating your profile
           </p>
         </div>

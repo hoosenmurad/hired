@@ -269,26 +269,27 @@ const ProfileForm = ({
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-4 font-sans">
-      <div className="w-full max-w-4xl mx-auto space-y-8">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-white mb-2">
+    <div className="w-full">
+      <div className="w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 lg:space-y-8">
+        {/* Mobile-optimized header - only show in ProfileForm if not shown in parent */}
+        <div className="text-center px-4 sm:px-0">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2 leading-tight">
             Create Your Profile
           </h1>
-          <p className="text-light-100 mt-2">
+          <p className="text-light-100 mt-2 text-sm sm:text-base">
             Upload your CV (PDF or text file) for automatic parsing or fill out
             manually.
           </p>
         </div>
 
         {/* CV Upload Section */}
-        <div className="bg-[#191b1f] rounded-2xl shadow-lg p-8 space-y-6">
-          <h2 className="text-2xl font-semibold text-white">
+        <div className="bg-[#191b1f] rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
+          <h2 className="text-xl sm:text-2xl font-semibold text-white">
             Import CV/Resume
           </h2>
           <div
             {...getRootProps()}
-            className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
+            className={`border-2 border-dashed rounded-lg sm:rounded-xl p-4 sm:p-6 lg:p-8 text-center cursor-pointer transition-colors ${
               isDragActive
                 ? "border-primary-200 bg-dark-200"
                 : "border-light-600 hover:border-primary-200 bg-dark-200/50"
@@ -297,18 +298,20 @@ const ProfileForm = ({
             <input {...getInputProps()} />
             {isParsingCV ? (
               <div className="flex items-center justify-center space-x-2">
-                <Loader className="animate-spin h-6 w-6 text-primary-200" />
-                <span className="text-white">Parsing CV...</span>
+                <Loader className="animate-spin h-5 w-5 sm:h-6 sm:w-6 text-primary-200" />
+                <span className="text-white text-sm sm:text-base">
+                  Parsing CV...
+                </span>
               </div>
             ) : (
               <div className="space-y-2">
-                <Upload className="h-8 w-8 mx-auto text-light-400" />
-                <p className="text-lg text-white">
+                <Upload className="h-6 w-6 sm:h-8 sm:w-8 mx-auto text-light-400" />
+                <p className="text-base sm:text-lg text-white">
                   {isDragActive
                     ? "Drop your CV here"
                     : "Drag & drop your CV here, or click to select"}
                 </p>
-                <p className="text-sm text-light-100">
+                <p className="text-xs sm:text-sm text-light-100">
                   Supports PDF (.pdf) and text files (.txt). Maximum 10MB.
                 </p>
               </div>
@@ -317,15 +320,15 @@ const ProfileForm = ({
         </div>
 
         {/* Manual Form */}
-        <div className="bg-[#191b1f] rounded-2xl shadow-lg p-8">
+        <div className="bg-[#191b1f] rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 lg:p-8">
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(handleSubmit)}
-              className="space-y-8"
+              className="space-y-6 sm:space-y-8"
             >
               {/* Basic Information */}
-              <div className="space-y-6">
-                <h2 className="text-2xl font-semibold text-white">
+              <div className="space-y-4 sm:space-y-6">
+                <h2 className="text-xl sm:text-2xl font-semibold text-white">
                   Basic Information
                 </h2>
 
@@ -336,7 +339,7 @@ const ProfileForm = ({
                     <div className="space-y-2">
                       <Label
                         htmlFor="name"
-                        className="text-light-100 font-normal"
+                        className="text-light-100 font-normal text-sm sm:text-base"
                       >
                         Full Name
                       </Label>
@@ -344,7 +347,7 @@ const ProfileForm = ({
                         <Input
                           id="name"
                           placeholder="Enter your full name"
-                          className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                          className="bg-dark-200 rounded-full min-h-12 sm:min-h-14 px-4 sm:px-5 placeholder:text-light-100 border-none text-white text-sm sm:text-base"
                           {...field}
                         />
                       </FormControl>
@@ -360,41 +363,16 @@ const ProfileForm = ({
                     <div className="space-y-2">
                       <Label
                         htmlFor="summary"
-                        className="text-light-100 font-normal"
+                        className="text-light-100 font-normal text-sm sm:text-base"
                       >
                         Professional Summary
                       </Label>
                       <FormControl>
                         <Textarea
                           id="summary"
-                          placeholder="Brief overview of your professional background and expertise"
+                          placeholder="Brief overview of your professional background and key achievements"
                           rows={4}
-                          className="bg-dark-200 rounded-lg min-h-12 px-5 placeholder:text-light-100 border-none text-white resize-none"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </div>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="goals"
-                  render={({ field }) => (
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="goals"
-                        className="text-light-100 font-normal"
-                      >
-                        Career Goals
-                      </Label>
-                      <FormControl>
-                        <Textarea
-                          id="goals"
-                          placeholder="What are your career goals and aspirations?"
-                          rows={3}
-                          className="bg-dark-200 rounded-lg min-h-12 px-5 placeholder:text-light-100 border-none text-white resize-none"
+                          className="bg-dark-200 rounded-lg min-h-12 px-4 sm:px-5 placeholder:text-light-100 border-none text-white resize-none text-sm sm:text-base"
                           {...field}
                         />
                       </FormControl>
@@ -409,11 +387,11 @@ const ProfileForm = ({
                 control={form.control}
                 name="skills"
                 render={() => (
-                  <div className="space-y-6">
-                    <h2 className="text-2xl font-semibold text-white">
+                  <div className="space-y-4 sm:space-y-6">
+                    <h2 className="text-xl sm:text-2xl font-semibold text-white">
                       Skills
                     </h2>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <Input
                         value={skillInput}
                         onChange={(e) => setSkillInput(e.target.value)}
@@ -424,22 +402,22 @@ const ProfileForm = ({
                           }
                         }}
                         placeholder="Type a skill and press Enter"
-                        className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                        className="bg-dark-200 rounded-full min-h-12 sm:min-h-14 px-4 sm:px-5 placeholder:text-light-100 border-none text-white text-sm sm:text-base flex-1"
                       />
                       <Button
                         type="button"
                         onClick={handleAddSkill}
                         disabled={!skillInput.trim()}
-                        className="bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full font-bold px-5 cursor-pointer min-h-12"
+                        className="bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full font-bold px-4 sm:px-5 cursor-pointer min-h-12 sm:min-h-14 w-full sm:w-auto"
                       >
-                        Add
+                        Add Skill
                       </Button>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {form.watch("skills").map((skill, index) => (
                         <div
                           key={index}
-                          className="flex items-center px-3 py-1 rounded-full bg-dark-200 text-primary-200 border border-primary-200/20"
+                          className="flex items-center px-3 py-2 rounded-full bg-dark-200 text-primary-200 border border-primary-200/20 text-sm"
                         >
                           <span>{skill}</span>
                           <button
@@ -447,7 +425,7 @@ const ProfileForm = ({
                             onClick={() => handleRemoveSkill(index)}
                             className="ml-2 text-primary-200 hover:text-destructive-100"
                           >
-                            <X className="h-3 w-3" />
+                            <X className="h-3 w-3 sm:h-4 sm:w-4" />
                           </button>
                         </div>
                       ))}
@@ -458,9 +436,9 @@ const ProfileForm = ({
               />
 
               {/* Education */}
-              <div className="space-y-6">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-2xl font-semibold text-white">
+              <div className="space-y-4 sm:space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <h2 className="text-xl sm:text-2xl font-semibold text-white">
                     Education
                   </h2>
                   <Button
@@ -468,7 +446,7 @@ const ProfileForm = ({
                     onClick={() =>
                       appendEducation({ degree: "", institution: "", year: "" })
                     }
-                    className="bg-dark-200 text-primary-200 hover:bg-dark-200/80 rounded-full font-bold px-5 cursor-pointer min-h-10"
+                    className="bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full font-bold px-4 sm:px-5 cursor-pointer min-h-10 sm:min-h-12 w-full sm:w-auto"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Add Education
@@ -478,39 +456,60 @@ const ProfileForm = ({
                 {educationFields.map((field, index) => (
                   <div
                     key={field.id}
-                    className="grid grid-cols-1 md:grid-cols-4 gap-4 p-6 rounded-xl bg-dark-200/50 border border-light-600/20"
+                    className="space-y-4 p-4 sm:p-6 rounded-lg bg-dark-200/30 border border-light-600/20"
                   >
-                    <FormField
-                      control={form.control}
-                      name={`education.${index}.degree`}
-                      render={({ field }) => (
-                        <div className="space-y-2">
-                          <Label className="text-light-100 font-normal">
-                            Degree
-                          </Label>
-                          <FormControl>
-                            <Input
-                              placeholder="e.g. Bachelor of Science"
-                              className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </div>
-                      )}
-                    />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name={`education.${index}.degree`}
+                        render={({ field }) => (
+                          <div className="space-y-2">
+                            <Label className="text-light-100 font-normal text-sm sm:text-base">
+                              Degree
+                            </Label>
+                            <FormControl>
+                              <Input
+                                placeholder="e.g. Bachelor of Science"
+                                className="bg-dark-200 rounded-full min-h-12 sm:min-h-14 px-4 sm:px-5 placeholder:text-light-100 border-none text-white text-sm sm:text-base"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </div>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`education.${index}.year`}
+                        render={({ field }) => (
+                          <div className="space-y-2">
+                            <Label className="text-light-100 font-normal text-sm sm:text-base">
+                              Year
+                            </Label>
+                            <FormControl>
+                              <Input
+                                placeholder="e.g. 2020"
+                                className="bg-dark-200 rounded-full min-h-12 sm:min-h-14 px-4 sm:px-5 placeholder:text-light-100 border-none text-white text-sm sm:text-base"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </div>
+                        )}
+                      />
+                    </div>
                     <FormField
                       control={form.control}
                       name={`education.${index}.institution`}
                       render={({ field }) => (
                         <div className="space-y-2">
-                          <Label className="text-light-100 font-normal">
+                          <Label className="text-light-100 font-normal text-sm sm:text-base">
                             Institution
                           </Label>
                           <FormControl>
                             <Input
-                              placeholder="e.g. University of..."
-                              className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                              placeholder="e.g. University of Example"
+                              className="bg-dark-200 rounded-full min-h-12 sm:min-h-14 px-4 sm:px-5 placeholder:text-light-100 border-none text-white text-sm sm:text-base"
                               {...field}
                             />
                           </FormControl>
@@ -518,33 +517,15 @@ const ProfileForm = ({
                         </div>
                       )}
                     />
-                    <FormField
-                      control={form.control}
-                      name={`education.${index}.year`}
-                      render={({ field }) => (
-                        <div className="space-y-2">
-                          <Label className="text-light-100 font-normal">
-                            Year
-                          </Label>
-                          <FormControl>
-                            <Input
-                              placeholder="e.g. 2020"
-                              className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </div>
-                      )}
-                    />
-                    <div className="flex items-end">
+                    <div className="flex justify-end">
                       <Button
                         type="button"
                         onClick={() => removeEducation(index)}
                         disabled={educationFields.length === 1}
-                        className="bg-dark-200 text-primary-200 hover:bg-dark-200/80 rounded-full min-h-10 px-3"
+                        className="bg-dark-200 text-primary-200 hover:bg-dark-200/80 rounded-full font-bold px-4 sm:px-5 cursor-pointer min-h-10 sm:min-h-12"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Remove
                       </Button>
                     </div>
                   </div>
@@ -552,9 +533,9 @@ const ProfileForm = ({
               </div>
 
               {/* Experience */}
-              <div className="space-y-6">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-2xl font-semibold text-white">
+              <div className="space-y-4 sm:space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <h2 className="text-xl sm:text-2xl font-semibold text-white">
                     Work Experience
                   </h2>
                   <Button
@@ -567,7 +548,7 @@ const ProfileForm = ({
                         description: "",
                       })
                     }
-                    className="bg-dark-200 text-primary-200 hover:bg-dark-200/80 rounded-full font-bold px-5 cursor-pointer min-h-10"
+                    className="bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full font-bold px-4 sm:px-5 cursor-pointer min-h-10 sm:min-h-12 w-full sm:w-auto"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Add Experience
@@ -577,21 +558,21 @@ const ProfileForm = ({
                 {experienceFields.map((field, index) => (
                   <div
                     key={field.id}
-                    className="p-6 rounded-xl bg-dark-200/50 border border-light-600/20 space-y-4"
+                    className="space-y-4 p-4 sm:p-6 rounded-lg bg-dark-200/30 border border-light-600/20"
                   >
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name={`experience.${index}.title`}
                         render={({ field }) => (
                           <div className="space-y-2">
-                            <Label className="text-light-100 font-normal">
+                            <Label className="text-light-100 font-normal text-sm sm:text-base">
                               Job Title
                             </Label>
                             <FormControl>
                               <Input
                                 placeholder="e.g. Software Engineer"
-                                className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                                className="bg-dark-200 rounded-full min-h-12 sm:min-h-14 px-4 sm:px-5 placeholder:text-light-100 border-none text-white text-sm sm:text-base"
                                 {...field}
                               />
                             </FormControl>
@@ -604,32 +585,13 @@ const ProfileForm = ({
                         name={`experience.${index}.company`}
                         render={({ field }) => (
                           <div className="space-y-2">
-                            <Label className="text-light-100 font-normal">
+                            <Label className="text-light-100 font-normal text-sm sm:text-base">
                               Company
                             </Label>
                             <FormControl>
                               <Input
                                 placeholder="e.g. Tech Corp"
-                                className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </div>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={`experience.${index}.duration`}
-                        render={({ field }) => (
-                          <div className="space-y-2">
-                            <Label className="text-light-100 font-normal">
-                              Duration
-                            </Label>
-                            <FormControl>
-                              <Input
-                                placeholder="e.g. Jan 2020 - Dec 2022"
-                                className="bg-dark-200 rounded-full min-h-12 px-5 placeholder:text-light-100 border-none text-white"
+                                className="bg-dark-200 rounded-full min-h-12 sm:min-h-14 px-4 sm:px-5 placeholder:text-light-100 border-none text-white text-sm sm:text-base"
                                 {...field}
                               />
                             </FormControl>
@@ -640,17 +602,36 @@ const ProfileForm = ({
                     </div>
                     <FormField
                       control={form.control}
+                      name={`experience.${index}.duration`}
+                      render={({ field }) => (
+                        <div className="space-y-2">
+                          <Label className="text-light-100 font-normal text-sm sm:text-base">
+                            Duration
+                          </Label>
+                          <FormControl>
+                            <Input
+                              placeholder="e.g. 2020 - 2023"
+                              className="bg-dark-200 rounded-full min-h-12 sm:min-h-14 px-4 sm:px-5 placeholder:text-light-100 border-none text-white text-sm sm:text-base"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </div>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
                       name={`experience.${index}.description`}
                       render={({ field }) => (
                         <div className="space-y-2">
-                          <Label className="text-light-100 font-normal">
+                          <Label className="text-light-100 font-normal text-sm sm:text-base">
                             Description
                           </Label>
                           <FormControl>
                             <Textarea
                               placeholder="Describe your responsibilities and achievements"
                               rows={3}
-                              className="bg-dark-200 rounded-lg min-h-12 px-5 placeholder:text-light-100 border-none text-white resize-none"
+                              className="bg-dark-200 rounded-lg min-h-12 px-4 sm:px-5 placeholder:text-light-100 border-none text-white resize-none text-sm sm:text-base"
                               {...field}
                             />
                           </FormControl>
@@ -663,7 +644,7 @@ const ProfileForm = ({
                         type="button"
                         onClick={() => removeExperience(index)}
                         disabled={experienceFields.length === 1}
-                        className="bg-dark-200 text-primary-200 hover:bg-dark-200/80 rounded-full font-bold px-5 cursor-pointer min-h-10"
+                        className="bg-dark-200 text-primary-200 hover:bg-dark-200/80 rounded-full font-bold px-4 sm:px-5 cursor-pointer min-h-10 sm:min-h-12"
                       >
                         <Trash2 className="h-4 w-4 mr-2" />
                         Remove
@@ -673,9 +654,40 @@ const ProfileForm = ({
                 ))}
               </div>
 
+              {/* Goals */}
+              <FormField
+                control={form.control}
+                name="goals"
+                render={({ field }) => (
+                  <div className="space-y-4 sm:space-y-6">
+                    <h2 className="text-xl sm:text-2xl font-semibold text-white">
+                      Career Goals
+                    </h2>
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="goals"
+                        className="text-light-100 font-normal text-sm sm:text-base"
+                      >
+                        What are your career aspirations?
+                      </Label>
+                      <FormControl>
+                        <Textarea
+                          id="goals"
+                          placeholder="Describe your career goals, what type of role you're looking for, and what you want to achieve professionally"
+                          rows={4}
+                          className="bg-dark-200 rounded-lg min-h-12 px-4 sm:px-5 placeholder:text-light-100 border-none text-white resize-none text-sm sm:text-base"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </div>
+                  </div>
+                )}
+              />
+
               <Button
                 type="submit"
-                className="w-full bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full min-h-12 font-bold px-5 cursor-pointer"
+                className="w-full bg-primary-200 text-dark-100 hover:bg-primary-200/80 rounded-full min-h-12 sm:min-h-14 font-bold px-5 cursor-pointer text-sm sm:text-base"
                 disabled={loading}
               >
                 {loading ? (
